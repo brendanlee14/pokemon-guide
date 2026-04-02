@@ -1,0 +1,2128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0B1426">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>PokéGuide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Nunito:wght@400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg-deep:    #080E1C;
+  --bg-card:    #111827;
+  --bg-panel:   #162033;
+  --border:     rgba(255,255,255,0.07);
+  --gold:       #F5A623;
+  --gold-dim:   rgba(245,166,35,0.15);
+  --teal:       #2DD4BF;
+  --teal-dim:   rgba(45,212,191,0.12);
+  --text:       #E8EDF5;
+  --text-muted: #6B7A99;
+  --red:        #FF6B6B;
+  --tab-h:      64px;
+  --hdr-h:      56px;
+  --radius:     12px;
+  --radius-sm:  8px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--bg-deep);
+  color: var(--text);
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── HEADER ─────────────────────────────── */
+#header {
+  height: var(--hdr-h);
+  background: linear-gradient(135deg, #0B1426 0%, #0F1E3A 100%);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 12px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+#header::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), var(--teal), transparent);
+}
+.logo {
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: 20px;
+  background: linear-gradient(135deg, var(--gold), var(--teal));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 2px;
+}
+.logo span {
+  font-family: 'Press Start 2P';
+  font-size: 11px;
+  display: block;
+  background: none;
+  -webkit-text-fill-color: var(--text-muted);
+  color: var(--text-muted);
+  letter-spacing: 0;
+  margin-top: 2px;
+}
+#game-selector {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+}
+.game-btn {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.game-btn.active {
+  background: var(--gold-dim);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.game-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ── MAIN CONTENT ─────────────────────────── */
+#main {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+.tab-pane {
+  display: none;
+  height: 100%;
+  overflow-y: auto;
+  padding: 16px 16px calc(var(--tab-h) + 16px);
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+.tab-pane.active { display: block; }
+
+/* ── BOTTOM TAB BAR ──────────────────────── */
+#tab-bar {
+  height: var(--tab-h);
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  border: none;
+  background: none;
+}
+.tab .tab-icon { font-size: 20px; line-height: 1; transition: transform 0.2s; }
+.tab .tab-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-muted);
+  transition: color 0.2s;
+  letter-spacing: 0.3px;
+}
+.tab.active .tab-label { color: var(--gold); }
+.tab.active .tab-icon { transform: translateY(-2px); }
+.tab.active::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 20%; right: 20%;
+  height: 2px;
+  background: var(--gold);
+  border-radius: 0 0 3px 3px;
+}
+
+/* ── SECTION HEADERS ─────────────────────── */
+.section-header {
+  margin-bottom: 20px;
+}
+.section-title {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--gold);
+  letter-spacing: 1px;
+}
+.section-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ── CARDS ───────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.card-title {
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.card-body { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+/* ── ACCENT CARDS ────────────────────────── */
+.card-gold { border-color: rgba(245,166,35,0.3); background: linear-gradient(135deg, var(--bg-card), rgba(245,166,35,0.04)); }
+.card-teal { border-color: rgba(45,212,191,0.3); background: linear-gradient(135deg, var(--bg-card), rgba(45,212,191,0.04)); }
+
+/* ── TYPE BADGES ─────────────────────────── */
+.types { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
+.type-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.t-normal   { background:#a8a878; color:#fff; }
+.t-fire     { background:#f08030; color:#fff; }
+.t-water    { background:#6890f0; color:#fff; }
+.t-electric { background:#f8d030; color:#333; }
+.t-grass    { background:#78c850; color:#fff; }
+.t-ice      { background:#98d8d8; color:#333; }
+.t-fighting { background:#c03028; color:#fff; }
+.t-poison   { background:#a040a0; color:#fff; }
+.t-ground   { background:#e0c068; color:#333; }
+.t-flying   { background:#a890f0; color:#fff; }
+.t-psychic  { background:#f85888; color:#fff; }
+.t-bug      { background:#a8b820; color:#fff; }
+.t-rock     { background:#b8a038; color:#fff; }
+.t-ghost    { background:#705898; color:#fff; }
+.t-dragon   { background:#7038f8; color:#fff; }
+.t-dark     { background:#705848; color:#fff; }
+.t-steel    { background:#b8b8d0; color:#333; }
+.t-fairy    { background:#ee99ac; color:#fff; }
+
+/* ── ISLAND / TRIAL CARDS ────────────────── */
+.island-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.island-header {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+.island-icon { font-size: 24px; }
+.island-name {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text);
+}
+.island-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.island-toggle {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-size: 18px;
+  transition: transform 0.3s;
+}
+.island-card.open .island-toggle { transform: rotate(180deg); }
+.island-body {
+  display: none;
+  padding: 0 16px 16px;
+}
+.island-card.open .island-body { display: block; }
+
+.area-item {
+  background: var(--bg-panel);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin-bottom: 8px;
+}
+.area-name {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--teal);
+  margin-bottom: 4px;
+}
+.area-pokemon {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+.area-items {
+  font-size: 12px;
+  color: var(--gold);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+.area-label { font-weight: 700; color: var(--text); }
+
+/* ── TRIAL CARDS ─────────────────────────── */
+.trial-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.trial-header {
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+.trial-number {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--gold-dim);
+  border: 1px solid rgba(245,166,35,0.4);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+.trial-info { flex: 1; }
+.trial-name {
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+}
+.trial-captain { font-size: 12px; color: var(--text-muted); }
+.trial-body {
+  display: none;
+  padding: 0 16px 16px;
+}
+.trial-card.open .trial-body { display: block; }
+.trial-card.open .trial-header { border-bottom: 1px solid var(--border); }
+
+.totem-box {
+  background: linear-gradient(135deg, rgba(112,56,248,0.1), rgba(112,56,248,0.05));
+  border: 1px solid rgba(112,56,248,0.3);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.totem-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #9B6DFF;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.totem-name {
+  font-family: 'Cinzel', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+.totem-level { font-size: 12px; color: var(--text-muted); }
+
+.strat-item {
+  display: flex;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.strat-item:last-child { border-bottom: none; }
+.strat-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--teal);
+  margin-top: 7px;
+  flex-shrink: 0;
+}
+
+/* ── POKÉDEX ─────────────────────────────── */
+#dex-search-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg-deep);
+  padding-bottom: 10px;
+  margin-bottom: 4px;
+}
+.search-input {
+  width: 100%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 10px 18px;
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-input:focus { border-color: var(--teal); }
+.type-filters {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 8px 0 4px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.type-filters::-webkit-scrollbar { display: none; }
+.type-filter-btn {
+  white-space: nowrap;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.type-filter-btn.active { background: var(--teal-dim); border-color: var(--teal); color: var(--teal); }
+
+.dex-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.dex-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.dex-card:active { border-color: var(--teal); }
+.dex-num { font-size: 10px; color: var(--text-muted); margin-bottom: 2px; }
+.dex-name { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+.dex-loc { font-size: 10px; color: var(--text-muted); margin-top: 5px; line-height: 1.4; }
+
+.dex-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 200;
+  align-items: flex-end;
+}
+.dex-modal-overlay.open { display: flex; }
+.dex-modal {
+  background: var(--bg-card);
+  border-radius: 20px 20px 0 0;
+  padding: 24px 20px 40px;
+  width: 100%;
+  max-height: 80dvh;
+  overflow-y: auto;
+  border-top: 1px solid var(--border);
+}
+.dex-modal-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+.dex-modal-num { font-size: 12px; color: var(--text-muted); }
+.dex-modal-name { font-family: 'Cinzel', serif; font-weight: 700; font-size: 20px; color: var(--text); }
+.dex-modal-close {
+  margin-left: auto;
+  width: 32px; height: 32px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+.dex-detail-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.dex-detail-label { font-weight: 700; color: var(--text-muted); min-width: 80px; }
+.dex-detail-val { color: var(--text); }
+.dex-move-row {
+  background: var(--bg-panel);
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 5px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+.move-name { font-weight: 700; color: var(--text); }
+.move-meta { color: var(--text-muted); }
+.dex-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin: 12px 0 6px;
+}
+
+/* ── TEAMS ────────────────────────────────── */
+.team-section-label {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--gold);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.pokemon-team-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  overflow: hidden;
+  cursor: pointer;
+}
+.pokemon-team-header {
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pokemon-team-name {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+}
+.pokemon-team-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.pokemon-team-toggle { margin-left: auto; color: var(--text-muted); transition: transform 0.3s; font-size: 16px; }
+.pokemon-team-card.open .pokemon-team-toggle { transform: rotate(180deg); }
+.pokemon-team-body { display: none; padding: 0 14px 14px; }
+.pokemon-team-card.open .pokemon-team-body { display: block; }
+
+.moveset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
+.move-pill {
+  background: var(--bg-panel);
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+.stat-label { min-width: 65px; color: var(--text-muted); }
+.stat-bar-bg {
+  flex: 1;
+  height: 5px;
+  background: var(--bg-deep);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.stat-bar { height: 100%; border-radius: 3px; background: var(--teal); }
+.stat-val { min-width: 28px; text-align: right; color: var(--text); font-weight: 700; }
+
+.held-item-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--gold-dim);
+  border: 1px solid rgba(245,166,35,0.3);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold);
+  margin-top: 8px;
+}
+
+/* ── RIDE POKÉMON ────────────────────────── */
+.ride-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.ride-icon {
+  width: 48px; height: 48px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+.ride-icon.teal { background: var(--teal-dim); }
+.ride-icon.gold { background: var(--gold-dim); }
+.ride-title { font-family: 'Cinzel', serif; font-weight: 700; font-size: 14px; color: var(--text); }
+.ride-ability {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--teal);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 2px 0 6px;
+}
+.ride-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+.ride-replaces {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255,107,107,0.1);
+  border: 1px solid rgba(255,107,107,0.3);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--red);
+  margin-top: 6px;
+}
+.when-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--teal-dim);
+  border: 1px solid rgba(45,212,191,0.3);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--teal);
+  margin-top: 4px;
+  margin-left: 6px;
+}
+
+/* ── POST GAME / TIPS ────────────────────── */
+.pg-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+}
+.pg-title {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--teal);
+  margin-bottom: 6px;
+}
+.pg-body { font-size: 13px; color: var(--text-muted); line-height: 1.7; }
+.pg-tag {
+  display: inline-block;
+  background: var(--teal-dim);
+  border: 1px solid rgba(45,212,191,0.3);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--teal);
+  margin-bottom: 8px;
+}
+
+.tip-item {
+  display: flex;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.tip-item:last-child { border-bottom: none; }
+.tip-emoji { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.tip-content { flex: 1; }
+.tip-title { font-weight: 700; font-size: 13px; color: var(--text); margin-bottom: 3px; }
+.tip-body { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+/* ── OVERVIEW ────────────────────────────── */
+.overview-banner {
+  background: linear-gradient(135deg, #0D1F3C, #0B2A3A);
+  border: 1px solid rgba(45,212,191,0.2);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.overview-banner::before {
+  content: '☀️';
+  position: absolute;
+  font-size: 120px;
+  opacity: 0.06;
+  top: -20px; right: -20px;
+  pointer-events: none;
+}
+.overview-game-title {
+  font-family: 'Cinzel', serif;
+  font-weight: 900;
+  font-size: 26px;
+  background: linear-gradient(135deg, var(--gold), #FFD700);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 2px;
+}
+.overview-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+.overview-stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 14px;
+}
+.overview-stat {
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  padding: 10px 8px;
+  text-align: center;
+}
+.overview-stat-val { font-family: 'Cinzel', serif; font-weight: 700; font-size: 20px; color: var(--teal); }
+.overview-stat-label { font-size: 9px; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.feature-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+}
+.feature-card .icon { font-size: 24px; margin-bottom: 6px; }
+.feature-card .title { font-weight: 700; font-size: 12px; color: var(--text); margin-bottom: 4px; }
+.feature-card .desc { font-size: 11px; color: var(--text-muted); line-height: 1.5; }
+
+/* ── SCROLLBAR ───────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* ── UTIL ────────────────────────────────── */
+.divider { height: 1px; background: var(--border); margin: 12px 0; }
+.text-gold { color: var(--gold); }
+.text-teal { color: var(--teal); }
+.fw7 { font-weight: 700; }
+.mt8 { margin-top: 8px; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header id="header">
+  <div class="logo">
+    PokéGuide
+    <span>FIELD GUIDE · V1</span>
+  </div>
+  <div id="game-selector">
+    <button class="game-btn active">☀️ Sun</button>
+    <button class="game-btn" disabled>🌙 Moon</button>
+    <button class="game-btn" disabled>+ More</button>
+  </div>
+</header>
+
+<!-- MAIN PANES -->
+<main id="main">
+
+  <!-- ══════════════ OVERVIEW ══════════════ -->
+  <section class="tab-pane active" id="pane-overview">
+    <div class="overview-banner">
+      <div class="overview-game-title">POKÉMON SUN</div>
+      <div class="overview-subtitle">Nintendo 3DS · Generation VII · 2016</div>
+      <div class="overview-stat-row">
+        <div class="overview-stat">
+          <div class="overview-stat-val">302</div>
+          <div class="overview-stat-label">Pokédex</div>
+        </div>
+        <div class="overview-stat">
+          <div class="overview-stat-val">7</div>
+          <div class="overview-stat-label">Trials</div>
+        </div>
+        <div class="overview-stat">
+          <div class="overview-stat-val">4</div>
+          <div class="overview-stat-label">Islands</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title">New to Alola</div>
+      <div class="section-subtitle">Key features introduced in Generation VII</div>
+    </div>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="icon">🏝️</div>
+        <div class="title">Island Challenge</div>
+        <div class="desc">Replaces Gyms. Complete Trials on each island, then face the Island Kahuna.</div>
+      </div>
+      <div class="feature-card">
+        <div class="icon">⚡</div>
+        <div class="title">Z-Moves</div>
+        <div class="desc">Powerful one-use moves activated via Z-Crystals and Z-Ring. Each type has one.</div>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🌺</div>
+        <div class="title">Alolan Forms</div>
+        <div class="desc">Classic Pokémon reimagined with new typings adapted to Alola's unique environment.</div>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🏇</div>
+        <div class="title">Ride Pokémon</div>
+        <div class="desc">HMs removed. Summon Ride Pokémon via the Ride Pager for field navigation.</div>
+      </div>
+      <div class="feature-card">
+        <div class="icon">🆘</div>
+        <div class="title">SOS Battles</div>
+        <div class="desc">Wild Pokémon can call for help. Chain allies for shiny hunting or rare abilities.</div>
+      </div>
+      <div class="feature-card">
+        <div class="icon">☀️</div>
+        <div class="title">Time Difference</div>
+        <div class="desc">Sun is 12 hrs ahead of Moon. Certain Pokémon only appear during Sun's time of day.</div>
+      </div>
+    </div>
+
+    <div class="card card-gold">
+      <div class="card-title">🗺️ Region: Alola</div>
+      <div class="card-body">Based on the Hawaiian Islands. Four main islands — <strong class="text-gold">Melemele</strong>, <strong class="text-gold">Akala</strong>, <strong class="text-gold">Ula'ula</strong>, and <strong class="text-gold">Poni</strong> — plus the man-made <strong class="text-gold">Aether Paradise</strong>. Each island has its own Kahuna and Trial Captains.</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔰 Starters</div>
+      <div class="card-body">Choose one of three at the start of your journey:</div>
+      <div style="margin-top:10px; display:grid; gap:8px;">
+        <div style="background:var(--bg-panel); border-radius:8px; padding:10px; display:flex; gap:10px; align-items:center;">
+          <span style="font-size:22px;">🌿</span>
+          <div>
+            <div class="fw7" style="font-size:13px;">Rowlet → Dartrix → Decidueye</div>
+            <div style="font-size:11px; color:var(--text-muted);">Grass/Flying → Grass/Flying → Grass/Ghost</div>
+            <div class="types mt8"><span class="type-badge t-grass">Grass</span><span class="type-badge t-ghost">Ghost</span></div>
+          </div>
+        </div>
+        <div style="background:var(--bg-panel); border-radius:8px; padding:10px; display:flex; gap:10px; align-items:center;">
+          <span style="font-size:22px;">🔥</span>
+          <div>
+            <div class="fw7" style="font-size:13px;">Litten → Torracat → Incineroar</div>
+            <div style="font-size:11px; color:var(--text-muted);">Fire → Fire → Fire/Dark</div>
+            <div class="types mt8"><span class="type-badge t-fire">Fire</span><span class="type-badge t-dark">Dark</span></div>
+          </div>
+        </div>
+        <div style="background:var(--bg-panel); border-radius:8px; padding:10px; display:flex; gap:10px; align-items:center;">
+          <span style="font-size:22px;">💧</span>
+          <div>
+            <div class="fw7" style="font-size:13px;">Popplio → Brionne → Primarina</div>
+            <div style="font-size:11px; color:var(--text-muted);">Water → Water → Water/Fairy</div>
+            <div class="types mt8"><span class="type-badge t-water">Water</span><span class="type-badge t-fairy">Fairy</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-teal">
+      <div class="card-title">👤 Key Characters</div>
+      <div class="card-body">
+        <strong class="text-teal">Hau</strong> — Your rival, Kahuna Hala's grandson. Friendly and enthusiastic.<br>
+        <strong class="text-teal">Lillie</strong> — Mysterious girl who travels with you. Central to the story.<br>
+        <strong class="text-teal">Professor Kukui</strong> — Alola's Pokémon professor. Final boss.<br>
+        <strong class="text-teal">Lusamine</strong> — Aether Foundation president. Main antagonist.<br>
+        <strong class="text-teal">Guzma</strong> — Team Skull boss. Fights with Golisopod and Ariados.
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ ISLANDS ══════════════ -->
+  <section class="tab-pane" id="pane-islands">
+    <div class="section-header">
+      <div class="section-title">Island Walkthrough</div>
+      <div class="section-subtitle">Tap an island to expand areas & key info</div>
+    </div>
+
+    <!-- MELEMELE -->
+    <div class="island-card" id="island-1">
+      <div class="island-header" onclick="toggleIsland('island-1')">
+        <span class="island-icon">🌺</span>
+        <div>
+          <div class="island-name">Melemele Island</div>
+          <div class="island-sub">Kahuna Hala · Trial Captain Ilima</div>
+        </div>
+        <span class="island-toggle">▼</span>
+      </div>
+      <div class="island-body">
+        <div class="area-item">
+          <div class="area-name">Route 1 & Hau'oli Outskirts</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Pikipek, Yungoos (Day), Rattata-A (Night), Caterpie, Metapod, Ledyba, Spearow</div>
+          <div class="area-items"><span class="area-label">Key Items:</span> Potion from Professor Kukui, Running Shoes after first trial</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Trainer's School</div>
+          <div class="area-pokemon"><span class="area-label">Trainers:</span> Several school trainers, introduces battle mechanics</div>
+          <div class="area-items"><span class="area-label">Items:</span> Potion, Great Ball, X Attack, X Defense, Antidote, Poké Balls</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Hau'oli City</div>
+          <div class="area-pokemon"><span class="area-label">Features:</span> Pokémon Center, Poké Mart, Apparel Shop, Photo Club, Malasada Shop</div>
+          <div class="area-items"><span class="area-label">Items:</span> Silk Scarf, Heal Ball, Revive; 10 Ultra Balls from Tourist Bureau</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Verdant Cavern (Trial Site 1)</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Rattata-A, Rattata, Zubat, Diglett, Ekans</div>
+          <div class="area-items"><span class="area-label">Objective:</span> Find 3 Pokémon to trigger the Totem battle</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Route 2, Berry Fields & Melemele Cemetery</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Drowzee, Magikarp, Slowpoke, Tentacool, Finneon, Wishiwashi</div>
+          <div class="area-items"><span class="area-label">Items:</span> Sitrus Berry, 2 Nest Balls, Revive from Delibird (trade); Machop for Spearow trade</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Seaward Cave & Kala'e Bay</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Zubat, Seel, Psyduck, Bagon (SOS chain at Kala'e Bay!)</div>
+          <div class="area-items"><span class="area-label">Tip:</span> SOS chain Bagon here for early Salamence line access</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Ten Carat Hill</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Rockruff, Jigglypuff, Carbink, Machop, Sableye (inner cave)</div>
+          <div class="area-items"><span class="area-label">Items:</span> Rufflet (Sun Exclusive), TMs, various hidden items</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Melemele Meadow</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Cottonee (Sun), Petilil (Moon), Oricorio (Meadow form — Psychic/Flying in Sun)</div>
+          <div class="area-items"><span class="area-label">Items:</span> Pink Nectar, Max Repel</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AKALA -->
+    <div class="island-card" id="island-2">
+      <div class="island-header" onclick="toggleIsland('island-2')">
+        <span class="island-icon">🌋</span>
+        <div>
+          <div class="island-name">Akala Island</div>
+          <div class="island-sub">Kahuna Olivia · Captains Lana, Kiawe & Mallow</div>
+        </div>
+        <span class="island-toggle">▼</span>
+      </div>
+      <div class="island-body">
+        <div class="area-item">
+          <div class="area-name">Heahea City</div>
+          <div class="area-pokemon"><span class="area-label">Features:</span> Second Pokémon Centre, Dimensional Research Lab (Ultra Beasts lore), Hotel</div>
+          <div class="area-items"><span class="area-label">Items:</span> Stardust, various from NPCs; good shop in Hano Resort mall</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Route 4 & Paniola Town</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Lillipup, Mudbray, Igglybuff, Eevee (Route 4), Happiny</div>
+          <div class="area-items"><span class="area-label">Items:</span> Eviolite, TM10 Hidden Power; Moomoo Milk at Ranch</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Paniola Ranch</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Tauros, Miltank, Mudbray, Magnemite</div>
+          <div class="area-items"><span class="area-label">Key:</span> Receive Stardust ×3, get Egg from Pokémon Nursery (Pichu if bring Pikachu)</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Brooklet Hill (Trial Site 2)</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Wishiwashi, Dewpider, Poliwag, Surskit, Psyduck, Gyarados (SOS)</div>
+          <div class="area-items"><span class="area-label">Objective:</span> Follow water trail, clear Wishiwashi before Totem battle</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Wela Volcano Park (Trial Site 3)</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Cubone, Kangaskhan, Magby, Fletchinder, Salandit (Lv 3+ ♀ for Salazzle)</div>
+          <div class="area-items"><span class="area-label">Objective:</span> Find the correct altar offering in a multi-choice trial</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Lush Jungle (Trial Site 4)</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Fomantis, Bounsweet, Comfey, Oranguru (Sun), Paras, Morelull</div>
+          <div class="area-items"><span class="area-label">Objective:</span> Gather 5 ingredients: Mago Berry, Big Mushroom, Tiny Mushroom, Revival Herb, Miracle Seed</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Royal Avenue & Battle Royal Dome</div>
+          <div class="area-pokemon"><span class="area-label">Features:</span> Battle Royal 4-way battles · Malasada shop · Shopping Centre with department store</div>
+          <div class="area-items"><span class="area-label">Items:</span> TM64 Explosion; BP items from Battle Royal</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Diglett's Tunnel</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Diglett-A (Steel/Ground), Zubat</div>
+          <div class="area-items"><span class="area-label">Items:</span> TM51 Steel Wing, Soft Sand hidden</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Memorial Hill & Route 8</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Gastly, Drifloon, Phantump, Flabébé</div>
+          <div class="area-items"><span class="area-label">Items:</span> Thunder Stone (behind trailer at Fossil Restoration Center), Escape Rope</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Konikoni City</div>
+          <div class="area-pokemon"><span class="area-label">Features:</span> Olivia's Jewelry shop, Herb shop, Incense shop</div>
+          <div class="area-items"><span class="area-label">Items:</span> Soft Sand, Charcoal, Mystic Water, all Incenses; TM96 Nature Power</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Ruins of Life & Akala Outskirts</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Carbink, Archen, Tirtouga (fossil restore), Minior</div>
+          <div class="area-items"><span class="area-label">Key:</span> Story boss Tapu Lele found here post-game</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ULA'ULA -->
+    <div class="island-card" id="island-3">
+      <div class="island-header" onclick="toggleIsland('island-3')">
+        <span class="island-icon">🌙</span>
+        <div>
+          <div class="island-name">Ula'ula Island</div>
+          <div class="island-sub">Kahuna Nanu · Captains Sophocles & Acerola</div>
+        </div>
+        <span class="island-toggle">▼</span>
+      </div>
+      <div class="island-body">
+        <div class="area-item">
+          <div class="area-name">Malie City</div>
+          <div class="area-pokemon"><span class="area-label">Features:</span> Japanese-inspired town, Library, Community Center, Outer Cape port</div>
+          <div class="area-items"><span class="area-label">Items:</span> Malie Library books give lore; TM from trainer near garden</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Mount Hokulani & Hokulani Observatory (Trial Site 5)</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Geodude-A, Boldore, Skarmory, Elekid (Sun), Minior</div>
+          <div class="area-items"><span class="area-label">Objective:</span> Answer quiz questions about Sophocles' game; Charjabug quiz battle</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Routes 10–14, Haina Desert</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Sandygast, Sandile, Trapinch, Gible (Haina Desert), Togedemaru</div>
+          <div class="area-items"><span class="area-label">Tip:</span> Haina Desert maze — go Up, Right, Up, Left to reach Ruins of Abundance</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Thrifty Megamart (Trial Site 6)</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Gastly, Haunter, Shuppet, Jellicent</div>
+          <div class="area-items"><span class="area-label">Objective:</span> Find Mimikyu by following Acerola through the haunted abandoned store</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Po Town & Shady House</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Scraggy, Trubbish (Po Town only)</div>
+          <div class="area-items"><span class="area-label">Key:</span> Team Skull HQ. Boss Guzma fight (Golisopod Lv44, Ariados Lv44)</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Aether House & Route 15</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Sneasel, Absol, Pangoro</div>
+          <div class="area-items"><span class="area-label">Key:</span> Gladion fight; Lillie's backstory revealed</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Ula'ula Meadow & Lake of the Moone</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Oricorio (Sensu form — Ghost/Flying), Ribombee, Floette</div>
+          <div class="area-items"><span class="area-label">Items:</span> Purple Nectar, Yellow Nectar; Ultra Wormhole portal</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PONI -->
+    <div class="island-card" id="island-4">
+      <div class="island-header" onclick="toggleIsland('island-4')">
+        <span class="island-icon">🐉</span>
+        <div>
+          <div class="island-name">Poni Island</div>
+          <div class="island-sub">Kahuna Hapu · No Captain (Hapu fills dual role)</div>
+        </div>
+        <span class="island-toggle">▼</span>
+      </div>
+      <div class="island-body">
+        <div class="area-item">
+          <div class="area-name">Seafolk Village</div>
+          <div class="area-pokemon"><span class="area-label">Features:</span> Boats form the town. Sailor teleports you to other islands.</div>
+          <div class="area-items"><span class="area-label">Items:</span> Ice Stone (Alolan Vulpix evo), Dragon Scale, TM from trainer</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Poni Wilds & Ancient Poni Path</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Magikarp, Lanturn, Dhelmise, Bruxish, Cloyster, Alomomola</div>
+          <div class="area-items"><span class="area-label">Items:</span> Assault Vest hidden, TMs scattered</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Vast Poni Canyon (Trial Site 7)</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Jangmo-o, Hakamo-o, Mimikyu, Carbink, Kommo-o (rare)</div>
+          <div class="area-items"><span class="area-label">Objective:</span> Navigate the canyon without a Captain; fight Totem Kommo-o</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Poni Plains & Poni Meadow</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Mudsdale, Tauros, Miltank, Oricorio (Baile — Fire/Flying), Ribombee</div>
+          <div class="area-items"><span class="area-label">Items:</span> Kommonium Z (from Kommo-o), various TMs</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Resolution Cave & Poni Gauntlet</div>
+          <div class="area-pokemon"><span class="area-label">Wild Pokémon:</span> Golbat, Deino, Zweilous (Resolution Cave)</div>
+          <div class="area-items"><span class="area-label">Key:</span> Deino/Zweilous excellent for Hydreigon. Poni Gauntlet has strong trainer battles.</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Altar of the Sunne & Mount Lanakila</div>
+          <div class="area-pokemon"><span class="area-label">Key Events:</span> Catch Solgaleo (Lv55) at Altar. Mount Lanakila leads to Pokémon League.</div>
+          <div class="area-items"><span class="area-label">Wild Pokémon:</span> Snorunt, Absol, Glalie, Vanillite (Mt Lanakila)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AETHER PARADISE -->
+    <div class="island-card" id="island-5">
+      <div class="island-header" onclick="toggleIsland('island-5')">
+        <span class="island-icon">🔬</span>
+        <div>
+          <div class="island-name">Aether Paradise</div>
+          <div class="island-sub">Story Location · Two visits required</div>
+        </div>
+        <span class="island-toggle">▼</span>
+      </div>
+      <div class="island-body">
+        <div class="area-item">
+          <div class="area-name">First Visit (Guided Tour)</div>
+          <div class="area-pokemon"><span class="area-label">Key:</span> Meet Lusamine, learn about Ultra Beasts. No battles required.</div>
+          <div class="area-items"><span class="area-label">Items:</span> Max Potion from researcher, observe Cosmog</div>
+        </div>
+        <div class="area-item">
+          <div class="area-name">Second Visit (Infiltration)</div>
+          <div class="area-pokemon"><span class="area-label">Key Battles:</span> Faba, Aether Foundation soldiers, Guzma, final boss Lusamine (Nihilego-fused)</div>
+          <div class="area-items"><span class="area-label">Team Prep:</span> Bring Ground, Psychic, Dark types. Lusamine has diverse team — see Trials section for her lineup.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ TRIALS ══════════════ -->
+  <section class="tab-pane" id="pane-trials">
+    <div class="section-header">
+      <div class="section-title">Trials & Grand Trials</div>
+      <div class="section-subtitle">Island Challenge · Totems · Kahunas · Elite Four</div>
+    </div>
+
+    <div style="margin-bottom:16px; padding:10px 14px; background:var(--bg-panel); border-radius:8px; font-size:12px; color:var(--text-muted);">
+      ⚔️ <strong class="text-gold">Sun Difference:</strong> Totem Gumshoos (not Raticate). Some trial layouts differ slightly from Moon.
+    </div>
+
+    <!-- TRIAL 1 -->
+    <div class="trial-card" id="trial-1">
+      <div class="trial-header" onclick="toggleTrial('trial-1')">
+        <div class="trial-number">T1</div>
+        <div class="trial-info">
+          <div class="trial-name">Verdant Cavern Trial</div>
+          <div class="trial-captain">Captain Ilima · Normal Type · Melemele Island</div>
+        </div>
+        <div class="types"><span class="type-badge t-normal">Normal</span></div>
+      </div>
+      <div class="trial-body">
+        <div class="totem-box">
+          <div class="totem-label">⚔️ Totem Pokémon (Sun)</div>
+          <div class="totem-name">Totem Gumshoos</div>
+          <div class="totem-level">Lv 12 · Ally: Yungoos (Lv 9)</div>
+          <div class="types mt8"><span class="type-badge t-normal">Normal</span></div>
+        </div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Gumshoos has boosted Sp. Defense from its Totem aura. Use physical Fighting moves.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Best counter: <strong>Makuhita</strong> (Melemele Meadow), <strong>Crabrawler</strong> (Berry Fields). Any Lv 13+ Fighting type wins cleanly.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Avoid using Ghost types — Normal is immune to Ghost.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div><strong class="text-gold">Reward:</strong> Normalium Z · TM31 Brick Break from Ilima</div></div>
+      </div>
+    </div>
+
+    <!-- TRIAL 2 -->
+    <div class="trial-card" id="trial-2">
+      <div class="trial-header" onclick="toggleTrial('trial-2')">
+        <div class="trial-number">T2</div>
+        <div class="trial-info">
+          <div class="trial-name">Brooklet Hill Trial</div>
+          <div class="trial-captain">Captain Lana · Water Type · Akala Island</div>
+        </div>
+        <div class="types"><span class="type-badge t-water">Water</span></div>
+      </div>
+      <div class="trial-body">
+        <div class="totem-box">
+          <div class="totem-label">⚔️ Totem Pokémon</div>
+          <div class="totem-name">Totem Wishiwashi</div>
+          <div class="totem-level">Lv 20 (School Form) · Ally: Alomomola (Lv 18)</div>
+          <div class="types mt8"><span class="type-badge t-water">Water</span></div>
+        </div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Wishiwashi's School Form has enormous HP and Attack. Priority moves to break its HP threshold (25% HP drops it to Solo form).</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Best counters: <strong>Charjabug</strong> (Route 5 Lv14+), <strong>Pikachu</strong>, <strong>Trumbeak</strong> with Peck for chip.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Alomomola will Heal Pulse Wishiwashi — take out the ally first if possible.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div><strong class="text-gold">Reward:</strong> Waterium Z · TM39 Rock Tomb from Lana</div></div>
+      </div>
+    </div>
+
+    <!-- TRIAL 3 -->
+    <div class="trial-card" id="trial-3">
+      <div class="trial-header" onclick="toggleTrial('trial-3')">
+        <div class="trial-number">T3</div>
+        <div class="trial-info">
+          <div class="trial-name">Wela Volcano Trial</div>
+          <div class="trial-captain">Captain Kiawe · Fire Type · Akala Island</div>
+        </div>
+        <div class="types"><span class="type-badge t-fire">Fire</span></div>
+      </div>
+      <div class="trial-body">
+        <div class="totem-box">
+          <div class="totem-label">⚔️ Totem Pokémon</div>
+          <div class="totem-name">Totem Salazzle</div>
+          <div class="totem-level">Lv 22 · Allies: Salandit ×2 (Lv 19)</div>
+          <div class="types mt8"><span class="type-badge t-fire">Fire</span><span class="type-badge t-poison">Poison</span></div>
+        </div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Salazzle's aura boosts Speed. The Salandits will inflict Burn and status — bring Pecha Berries.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Best counters: <strong>Slowpoke</strong> (Water/Psychic), <strong>Dugtrio</strong> (Ground), <strong>Wishiwashi</strong> (Water).</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Don't use Grass — Poison will wreck them. Rock-type moves are effective and safe here.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div><strong class="text-gold">Reward:</strong> Firium Z · TM39 Rock Tomb from Kiawe</div></div>
+      </div>
+    </div>
+
+    <!-- TRIAL 4 -->
+    <div class="trial-card" id="trial-4">
+      <div class="trial-header" onclick="toggleTrial('trial-4')">
+        <div class="trial-number">T4</div>
+        <div class="trial-info">
+          <div class="trial-name">Lush Jungle Trial</div>
+          <div class="trial-captain">Captain Mallow · Grass Type · Akala Island</div>
+        </div>
+        <div class="types"><span class="type-badge t-grass">Grass</span></div>
+      </div>
+      <div class="trial-body">
+        <div class="totem-box">
+          <div class="totem-label">⚔️ Totem Pokémon</div>
+          <div class="totem-name">Totem Lurantis</div>
+          <div class="totem-level">Lv 24 · Allies: Castform (Lv 22), Comfey (Lv 19)</div>
+          <div class="types mt8"><span class="type-badge t-grass">Grass</span></div>
+        </div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Lurantis has huge Attack. Castform may set up Sunny Day boosting Solar Blade — a one-hit KO potential.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Priority: KO Castform first with Ice, Fire, or Poison. Then tackle Lurantis.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Best counters: <strong>Salazzle</strong>, <strong>Salandit</strong>, <strong>Fletchinder</strong>, <strong>Trumbeak</strong>. Fire, Ice, Bug, Flying all work.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div><strong class="text-gold">Reward:</strong> Grassium Z · TM86 Grass Knot from Mallow</div></div>
+      </div>
+    </div>
+
+    <!-- TRIAL 5 -->
+    <div class="trial-card" id="trial-5">
+      <div class="trial-header" onclick="toggleTrial('trial-5')">
+        <div class="trial-number">T5</div>
+        <div class="trial-info">
+          <div class="trial-name">Hokulani Observatory Trial</div>
+          <div class="trial-captain">Captain Sophocles · Electric Type · Ula'ula Island</div>
+        </div>
+        <div class="types"><span class="type-badge t-electric">Electric</span></div>
+      </div>
+      <div class="trial-body">
+        <div class="totem-box">
+          <div class="totem-label">⚔️ Totem Pokémon</div>
+          <div class="totem-name">Totem Vikavolt</div>
+          <div class="totem-level">Lv 29 · Ally: Charjabug (Lv 27)</div>
+          <div class="types mt8"><span class="type-badge t-bug">Bug</span><span class="type-badge t-electric">Electric</span></div>
+        </div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Vikavolt has very high Sp. Attack. Charjabug uses String Shot to lower your Speed — fast sweepers critical.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Best counters: <strong>Mudsdale</strong> (Ground), <strong>Dugtrio-A</strong> (Ground), Rock-type moves for Bug coverage.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Fire also works well — kills Charjabug and threatens Vikavolt.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div><strong class="text-gold">Reward:</strong> Electrium Z · TM72 Volt Switch from Sophocles</div></div>
+      </div>
+    </div>
+
+    <!-- TRIAL 6 -->
+    <div class="trial-card" id="trial-6">
+      <div class="trial-header" onclick="toggleTrial('trial-6')">
+        <div class="trial-number">T6</div>
+        <div class="trial-info">
+          <div class="trial-name">Thrifty Megamart Trial</div>
+          <div class="trial-captain">Captain Acerola · Ghost Type · Ula'ula Island</div>
+        </div>
+        <div class="types"><span class="type-badge t-ghost">Ghost</span></div>
+      </div>
+      <div class="trial-body">
+        <div class="totem-box">
+          <div class="totem-label">⚔️ Totem Pokémon</div>
+          <div class="totem-name">Totem Mimikyu</div>
+          <div class="totem-level">Lv 33 · Allies: Haunter (Lv 31), Jellicent (Lv 31)</div>
+          <div class="types mt8"><span class="type-badge t-ghost">Ghost</span><span class="type-badge t-fairy">Fairy</span></div>
+        </div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Mimikyu's Disguise ability absorbs the first hit for free — don't waste a Z-Move on it. Use a weak move first to break Disguise.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Mimikyu is immune to Normal, Fighting, and Dragon. Use Ghost, Steel, or Poison.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Best counters: <strong>Gengar</strong>, <strong>Alolan Muk</strong> (Poison/Dark), <strong>Incineroar</strong> (Dark coverage), Steel-types.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div><strong class="text-gold">Reward:</strong> Ghostium Z · TM65 Shadow Claw from Acerola</div></div>
+      </div>
+    </div>
+
+    <!-- TRIAL 7 -->
+    <div class="trial-card" id="trial-7">
+      <div class="trial-header" onclick="toggleTrial('trial-7')">
+        <div class="trial-number">T7</div>
+        <div class="trial-info">
+          <div class="trial-name">Vast Poni Canyon Trial</div>
+          <div class="trial-captain">No Captain — self-guided · Dragon Type · Poni Island</div>
+        </div>
+        <div class="types"><span class="type-badge t-dragon">Dragon</span></div>
+      </div>
+      <div class="trial-body">
+        <div class="totem-box">
+          <div class="totem-label">⚔️ Totem Pokémon</div>
+          <div class="totem-name">Totem Kommo-o</div>
+          <div class="totem-level">Lv 45 · Ally: Scizor (Lv 43) or Hakamo-o</div>
+          <div class="types mt8"><span class="type-badge t-dragon">Dragon</span><span class="type-badge t-fighting">Fighting</span></div>
+        </div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Kommo-o is the hardest Totem. It boosts Special Defense on entry. Use physical special Dragon counters.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Fairy is immune to Dragon and hits for 2×. <strong>Primarina</strong> and <strong>Ribombee</strong> are ideal.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Ice-type moves are also effective. Avoid Rock and Bug — Fighting hits them for super effective damage.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div><strong class="text-gold">Reward:</strong> Dragonium Z · Kommonium Z (if already champion) · TM99 Dazzling Gleam</div></div>
+      </div>
+    </div>
+
+    <div style="margin: 20px 0 8px;">
+      <div class="team-section-label">⚡ Grand Trials (Island Kahunas)</div>
+    </div>
+
+    <!-- GRAND TRIAL 1 -->
+    <div class="trial-card" id="gtrial-1">
+      <div class="trial-header" onclick="toggleTrial('gtrial-1')">
+        <div class="trial-number" style="background:rgba(192,48,40,0.15); border-color:rgba(192,48,40,0.5); color:#FF6B6B;">G1</div>
+        <div class="trial-info">
+          <div class="trial-name">Grand Trial — Kahuna Hala</div>
+          <div class="trial-captain">Fighting Type · Melemele Island · Reward: Fightinium Z</div>
+        </div>
+        <div class="types"><span class="type-badge t-fighting">Fighting</span></div>
+      </div>
+      <div class="trial-body">
+        <div style="background:var(--bg-panel); border-radius:8px; padding:10px; margin-bottom:10px;">
+          <div class="dex-section-label">His Team</div>
+          <div class="dex-move-row"><span class="move-name">Mankey Lv 14</span><span class="move-meta t-fighting">Fighting</span></div>
+          <div class="dex-move-row"><span class="move-name">Makuhita Lv 14</span><span class="move-meta">Fighting</span></div>
+          <div class="dex-move-row"><span class="move-name">Crabrawler Lv 16</span><span class="move-meta">Fighting</span></div>
+        </div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Psychic, Flying, or Fairy destroys his whole team. Bring Butterfree, Pikipek line, or Drowzee.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Crabrawler uses Leer + Power-Up Punch combo — switch out if Atk gets too high.</div></div>
+      </div>
+    </div>
+
+    <!-- GRAND TRIAL 2 -->
+    <div class="trial-card" id="gtrial-2">
+      <div class="trial-header" onclick="toggleTrial('gtrial-2')">
+        <div class="trial-number" style="background:rgba(184,160,56,0.15); border-color:rgba(184,160,56,0.5); color:#D4A830;">G2</div>
+        <div class="trial-info">
+          <div class="trial-name">Grand Trial — Kahuna Olivia</div>
+          <div class="trial-captain">Rock Type · Akala Island · Reward: Rockium Z</div>
+        </div>
+        <div class="types"><span class="type-badge t-rock">Rock</span></div>
+      </div>
+      <div class="trial-body">
+        <div style="background:var(--bg-panel); border-radius:8px; padding:10px; margin-bottom:10px;">
+          <div class="dex-section-label">Her Team</div>
+          <div class="dex-move-row"><span class="move-name">Nosepass Lv 26</span><span class="move-meta">Rock</span></div>
+          <div class="dex-move-row"><span class="move-name">Boldore Lv 26</span><span class="move-meta">Rock</span></div>
+          <div class="dex-move-row"><span class="move-name">Midnight Lycanroc Lv 27</span><span class="move-meta">Rock</span></div>
+        </div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Water, Grass, Fighting, Ground, Steel all effective. <strong>Mudsdale</strong> or <strong>Wishiwashi</strong> are ideal choices.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Lycanroc is the ace — it's Rock only, so Water OHKO is likely. Watch for Accelerock (priority).</div></div>
+      </div>
+    </div>
+
+    <!-- GRAND TRIAL 3 -->
+    <div class="trial-card" id="gtrial-3">
+      <div class="trial-header" onclick="toggleTrial('gtrial-3')">
+        <div class="trial-number" style="background:rgba(112,88,72,0.2); border-color:rgba(112,88,72,0.5); color:#A07850;">G3</div>
+        <div class="trial-info">
+          <div class="trial-name">Grand Trial — Kahuna Nanu</div>
+          <div class="trial-captain">Dark Type · Ula'ula Island · Reward: Darkinium Z</div>
+        </div>
+        <div class="types"><span class="type-badge t-dark">Dark</span></div>
+      </div>
+      <div class="trial-body">
+        <div style="background:var(--bg-panel); border-radius:8px; padding:10px; margin-bottom:10px;">
+          <div class="dex-section-label">His Team</div>
+          <div class="dex-move-row"><span class="move-name">Sableye ×3 (Lv 35)</span><span class="move-meta">Dark/Ghost</span></div>
+          <div class="dex-move-row"><span class="move-name">Alolan Persian Lv 36</span><span class="move-meta">Dark</span></div>
+        </div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Sableye only has one weakness: Fairy. Bring a strong Fairy for all 3 Sableye.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Alolan Persian uses Parting Shot — bring multiple attackers. Fighting covers Persian well.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Best pick: <strong>Primarina</strong> with Sparkling Aria handles the whole fight comfortably.</div></div>
+      </div>
+    </div>
+
+    <!-- GRAND TRIAL 4 -->
+    <div class="trial-card" id="gtrial-4">
+      <div class="trial-header" onclick="toggleTrial('gtrial-4')">
+        <div class="trial-number" style="background:rgba(224,192,104,0.15); border-color:rgba(224,192,104,0.4); color:#D4A050;">G4</div>
+        <div class="trial-info">
+          <div class="trial-name">Grand Trial — Kahuna Hapu</div>
+          <div class="trial-captain">Ground Type · Poni Island · Reward: Groundium Z</div>
+        </div>
+        <div class="types"><span class="type-badge t-ground">Ground</span></div>
+      </div>
+      <div class="trial-body">
+        <div style="background:var(--bg-panel); border-radius:8px; padding:10px; margin-bottom:10px;">
+          <div class="dex-section-label">Her Team</div>
+          <div class="dex-move-row"><span class="move-name">Alolan Dugtrio Lv 43</span><span class="move-meta">Ground/Steel</span></div>
+          <div class="dex-move-row"><span class="move-name">Gastrodon Lv 43</span><span class="move-meta">Water/Ground</span></div>
+          <div class="dex-move-row"><span class="move-name">Flygon Lv 44</span><span class="move-meta">Dragon/Ground</span></div>
+          <div class="dex-move-row"><span class="move-name">Mudsdale Lv 46</span><span class="move-meta">Ground</span></div>
+        </div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Water and Grass cover Gastrodon and Mudsdale. Ice covers Flygon (4×).</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Alolan Dugtrio has Arena Trap — can't switch out. Bring a Water or Grass type to bait it.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Mudsdale with Stamina is the wall — chip it down with special attackers from range.</div></div>
+      </div>
+    </div>
+
+    <div style="margin: 20px 0 8px;">
+      <div class="team-section-label">🏆 Pokémon League</div>
+    </div>
+
+    <div class="card" style="margin-bottom:10px;">
+      <div class="card-title" style="color:var(--red);">Elite Four — Battle Order & Counters</div>
+      <div class="card-body">
+        <div style="display:grid; gap:8px; margin-top:6px;">
+          <div style="background:var(--bg-panel); border-radius:8px; padding:10px;">
+            <div class="fw7" style="font-size:13px; color:var(--text);">1. Hala (Fighting)</div>
+            <div style="font-size:12px; color:var(--text-muted); margin-top:3px;">Hariyama, Primeape, Crabominable, Bewear, Poliwrath. Use Psychic, Fairy, Flying.</div>
+          </div>
+          <div style="background:var(--bg-panel); border-radius:8px; padding:10px;">
+            <div class="fw7" style="font-size:13px; color:var(--text);">2. Olivia (Rock)</div>
+            <div style="font-size:12px; color:var(--text-muted); margin-top:3px;">Relicanth, Carbink, Boldore, Golem-A, Midnight Lycanroc. Use Water, Grass, Ground.</div>
+          </div>
+          <div style="background:var(--bg-panel); border-radius:8px; padding:10px;">
+            <div class="fw7" style="font-size:13px; color:var(--text);">3. Acerola (Ghost)</div>
+            <div style="font-size:12px; color:var(--text-muted); margin-top:3px;">Sableye, Dhelmise, Froslass, Drifblim, Palossand. Use Dark, Ghost, Ice. Normal immune to Ghost.</div>
+          </div>
+          <div style="background:var(--bg-panel); border-radius:8px; padding:10px;">
+            <div class="fw7" style="font-size:13px; color:var(--text);">4. Kahili (Flying)</div>
+            <div style="font-size:12px; color:var(--text-muted); margin-top:3px;">Skarmory, Crobat, Oricorio-G, Mandibuzz, Toucannon. Use Electric, Rock, Ice. Bring Thunder.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="trial-card" id="champ">
+      <div class="trial-header" onclick="toggleTrial('champ')">
+        <div class="trial-number" style="background:rgba(245,166,35,0.15); border-color:rgba(245,166,35,0.5); color:var(--gold);">👑</div>
+        <div class="trial-info">
+          <div class="trial-name">Champion — Professor Kukui</div>
+          <div class="trial-captain">Mixed Team · No Type Focus · The Final Battle</div>
+        </div>
+      </div>
+      <div class="trial-body">
+        <div style="background:var(--bg-panel); border-radius:8px; padding:10px; margin-bottom:10px;">
+          <div class="dex-section-label">His Team (varies by your starter)</div>
+          <div class="dex-move-row"><span class="move-name">Lycanroc (Midday) Lv 57</span><span class="move-meta">Rock</span></div>
+          <div class="dex-move-row"><span class="move-name">Braviary Lv 57</span><span class="move-meta">Normal/Flying</span></div>
+          <div class="dex-move-row"><span class="move-name">Magnezone Lv 57</span><span class="move-meta">Electric/Steel</span></div>
+          <div class="dex-move-row"><span class="move-name">Snorlax Lv 57</span><span class="move-meta">Normal</span></div>
+          <div class="dex-move-row"><span class="move-name">Ninetales-A Lv 57</span><span class="move-meta">Ice/Fairy</span></div>
+          <div class="dex-move-row"><span class="move-name">Starter Counter Lv 58</span><span class="move-meta">(Incineroar/Primarina/Decidueye)</span></div>
+        </div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Kukui always counters your starter. Swap your starter out when his final Pokémon arrives.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Magnezone is the biggest threat — Ground (immune to Electric) or Fire 2×. A-Dugtrio is perfect but can't switch.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div>A-Ninetales uses Aurora Veil + Blizzard. Use Steel types and knock it out before it sets up.</div></div>
+        <div class="strat-item"><div class="strat-dot"></div><div>Snorlax has enormous HP and Rest+Sleep Talk. Use Fighting moves or status.</div></div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ══════════════ POKÉDEX ══════════════ -->
+  <section class="tab-pane" id="pane-pokedex">
+    <div id="dex-search-bar">
+      <input class="search-input" type="text" id="dexSearch" placeholder="🔍  Search Pokémon name or location..." oninput="filterDex()">
+      <div class="type-filters" id="typeFilters"></div>
+    </div>
+    <div class="dex-grid" id="dexGrid"></div>
+    <div id="dexEmpty" style="display:none; text-align:center; padding:40px 20px; color:var(--text-muted); font-size:14px;">No Pokémon found</div>
+  </section>
+
+  <!-- ── DEX MODAL ── -->
+  <div class="dex-modal-overlay" id="dexModal" onclick="closeDexModal(event)">
+    <div class="dex-modal" id="dexModalContent"></div>
+  </div>
+
+  <!-- ══════════════ TEAMS ══════════════ -->
+  <section class="tab-pane" id="pane-teams">
+    <div class="section-header">
+      <div class="section-title">Best Teams</div>
+      <div class="section-subtitle">Movesets · Held Items · Abilities</div>
+    </div>
+
+    <div class="team-section-label" style="margin-bottom:14px;">⚔️ End-Game / Elite Four Team</div>
+    <div style="background:var(--bg-panel); border-radius:8px; padding:10px 12px; margin-bottom:16px; font-size:12px; color:var(--text-muted);">
+      A balanced team covering all Elite Four types. All obtainable before the final battle.
+    </div>
+
+    <div id="teamsContainer"></div>
+
+    <div class="team-section-label" style="margin: 20px 0 14px;">🌟 Starter Recommendations</div>
+    <div class="card card-teal">
+      <div class="card-title">🔥 Incineroar — Best Overall Starter</div>
+      <div class="card-body">Fire/Dark typing covers Ghost (Dark), Fairy (Steel/Poison on team), Ice (Fire). Intimidate ability on hidden is incredible. Best for tackling the Elite Four lineup. <span class="text-teal">Recommended pick for first playthrough.</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">💧 Primarina — Best for New Players</div>
+      <div class="card-body">Water/Fairy handles Hala (Fairy), Olivia (Water), Nanu (Fairy), Kommo-o (Fairy). Very bulky special attacker. Covers the most Grand Trials of any starter.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">🌿 Decidueye — Best for Experienced Players</div>
+      <div class="card-body">Grass/Ghost has tricky coverage. Spirit Shackle traps opponents. Needs strong team support due to Dark, Fire, Flying, Ice, Rock weaknesses. High skill ceiling reward.</div>
+    </div>
+
+    <div class="team-section-label" style="margin: 20px 0 14px;">🏆 Battle Tree Team</div>
+    <div style="background:var(--bg-panel); border-radius:8px; padding:10px 12px; margin-bottom:12px; font-size:12px; color:var(--text-muted);">
+      For the post-game Battle Tree facility. Fully optimised at Lv 50. Comp-adjacent.
+    </div>
+    <div id="battleTreeContainer"></div>
+  </section>
+
+  <!-- ══════════════ RIDES ══════════════ -->
+  <section class="tab-pane" id="pane-rides">
+    <div class="section-header">
+      <div class="section-title">Ride Pokémon</div>
+      <div class="section-subtitle">Gen VII's replacement for HMs · Pager required</div>
+    </div>
+    <div class="card card-gold" style="margin-bottom:16px;">
+      <div class="card-title">📱 The Ride Pager</div>
+      <div class="card-body">In Pokémon Sun, HMs are completely removed. Instead, you call Ride Pokémon via your Ride Pager (a feature of the Rotom Pokédex). You receive calls throughout the story — they don't occupy a party slot and don't need to know moves. Each Ride Pokémon replaces one or more classic HM functions.</div>
+    </div>
+    <div id="ridesContainer"></div>
+  </section>
+
+  <!-- ══════════════ POST-GAME ══════════════ -->
+  <section class="tab-pane" id="pane-postgame">
+    <div class="section-header">
+      <div class="section-title">Post-Game</div>
+      <div class="section-subtitle">Content unlocked after becoming Champion</div>
+    </div>
+    <div id="postgameContainer"></div>
+
+    <div class="team-section-label" style="margin: 20px 0 12px;">💡 General Tips</div>
+    <div class="card">
+      <div id="tipsContainer"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- BOTTOM TAB BAR -->
+<nav id="tab-bar">
+  <button class="tab active" onclick="switchTab('overview', this)">
+    <span class="tab-icon">☀️</span>
+    <span class="tab-label">Overview</span>
+  </button>
+  <button class="tab" onclick="switchTab('islands', this)">
+    <span class="tab-icon">🏝️</span>
+    <span class="tab-label">Islands</span>
+  </button>
+  <button class="tab" onclick="switchTab('trials', this)">
+    <span class="tab-icon">⚔️</span>
+    <span class="tab-label">Trials</span>
+  </button>
+  <button class="tab" onclick="switchTab('pokedex', this)">
+    <span class="tab-icon">📖</span>
+    <span class="tab-label">Pokédex</span>
+  </button>
+  <button class="tab" onclick="switchTab('teams', this)">
+    <span class="tab-icon">👥</span>
+    <span class="tab-label">Teams</span>
+  </button>
+  <button class="tab" onclick="switchTab('rides', this)">
+    <span class="tab-icon">🏇</span>
+    <span class="tab-label">Rides</span>
+  </button>
+  <button class="tab" onclick="switchTab('postgame', this)">
+    <span class="tab-icon">🌟</span>
+    <span class="tab-label">Post-Game</span>
+  </button>
+</nav>
+
+<script>
+// ══════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════
+
+const TYPE_COLORS = {
+  Normal:'t-normal', Fire:'t-fire', Water:'t-water', Electric:'t-electric',
+  Grass:'t-grass', Ice:'t-ice', Fighting:'t-fighting', Poison:'t-poison',
+  Ground:'t-ground', Flying:'t-flying', Psychic:'t-psychic', Bug:'t-bug',
+  Rock:'t-rock', Ghost:'t-ghost', Dragon:'t-dragon', Dark:'t-dark',
+  Steel:'t-steel', Fairy:'t-fairy'
+};
+
+const DEX_DATA = [
+  // Gen 7 Alola New
+  {num:'#722',name:'Rowlet',types:['Grass','Flying'],loc:'Starter (Prof. Kukui)',evo:'→ Dartrix Lv17 → Decidueye Lv34',ability:'Overgrow / Long Reach (HA)',moves:['Tackle','Leafage','Peck','Razor Leaf'],tip:'Best early game. Long Reach HA prevents contact moves being affected by opponent abilities.'},
+  {num:'#723',name:'Dartrix',types:['Grass','Flying'],loc:'Evolve Rowlet Lv17',evo:'→ Decidueye Lv34',ability:'Overgrow / Long Reach (HA)',moves:['Razor Leaf','Foresight','Astonish','Ominous Wind'],tip:'Transition form. Don\'t neglect it — it learns good moves before Decidueye.'},
+  {num:'#724',name:'Decidueye',types:['Grass','Ghost'],loc:'Evolve Dartrix Lv34',evo:'Final form',ability:'Overgrow / Long Reach (HA)',moves:['Spirit Shackle','Leaf Blade','Sucker Punch','Brave Bird'],tip:'Spirit Shackle prevents switching. Long Reach HA stops contact recoil/effects. Great physical attacker.'},
+  {num:'#725',name:'Litten',types:['Fire'],loc:'Starter (Prof. Kukui)',evo:'→ Torracat Lv17 → Incineroar Lv34',ability:'Blaze / Intimidate (HA)',moves:['Scratch','Ember','Lick','Growl'],tip:'Recommended starter. Intimidate HA is one of the best abilities in the game for in-game play.'},
+  {num:'#726',name:'Torracat',types:['Fire'],loc:'Evolve Litten Lv17',evo:'→ Incineroar Lv34',ability:'Blaze / Intimidate (HA)',moves:['Fire Fang','Bite','Swagger','Scary Face'],tip:'Solid middle stage. Fire Fang + Bite covers a lot of in-game encounters.'},
+  {num:'#727',name:'Incineroar',types:['Fire','Dark'],loc:'Evolve Torracat Lv34',evo:'Final form',ability:'Blaze / Intimidate (HA)',moves:['Darkest Lariat','Flare Blitz','Close Combat','Bulk Up'],tip:'Intimidate on HA is game-breaking for in-game. Fire/Dark is excellent typing covering Ghost, Psychic, Grass, Ice, Bug, Steel.'},
+  {num:'#728',name:'Popplio',types:['Water'],loc:'Starter (Prof. Kukui)',evo:'→ Brionne Lv17 → Primarina Lv34',ability:'Torrent / Liquid Voice (HA)',moves:['Pound','Water Gun','Growl','Disarming Voice'],tip:'Best starter for covering the most trials. Fairy typing handles multiple Kahunas.'},
+  {num:'#729',name:'Brionne',types:['Water'],loc:'Evolve Popplio Lv17',evo:'→ Primarina Lv34',ability:'Torrent / Liquid Voice (HA)',moves:['Aqua Jet','Disarming Voice','Baby-Doll Eyes','Icy Wind'],tip:'Aqua Jet priority is handy. Liquid Voice HA turns sound moves into Water type.'},
+  {num:'#730',name:'Primarina',types:['Water','Fairy'],loc:'Evolve Brionne Lv34',evo:'Final form',ability:'Torrent / Liquid Voice (HA)',moves:['Sparkling Aria','Moonblast','Aqua Jet','Psychic'],tip:'Oceanic Operetta Z-Move (195 BP) is the strongest special move in the game. Sparkling Aria also cures burns — great vs Salazzle.'},
+  {num:'#731',name:'Pikipek',types:['Normal','Flying'],loc:'Route 1 (Common)',evo:'→ Trumbeak Lv14 → Toucannon Lv28',ability:'Keen Eye / Skill Link (HA)',moves:['Peck','Growl','Rock Smash','Echoed Voice'],tip:'Skill Link HA makes multi-hit moves hit 5 times. Bullet Seed + Skill Link is excellent.'},
+  {num:'#732',name:'Trumbeak',types:['Normal','Flying'],loc:'Evolve Pikipek Lv14',evo:'→ Toucannon Lv28',ability:'Keen Eye / Skill Link (HA)',moves:['Beak Blast','Rock Blast','Bullet Seed','Supersonic'],tip:'Rock Blast + Skill Link hits 5 times and breaks through Substitutes.'},
+  {num:'#733',name:'Toucannon',types:['Normal','Flying'],loc:'Evolve Trumbeak Lv28',evo:'Final form',ability:'Keen Eye / Skill Link (HA)',moves:['Beak Blast','Bullet Seed','Rock Blast','High Horsepower'],tip:'Beak Blast burns contact attackers. With Skill Link + Bullet Seed, excellent coverage vs Water/Rock/Ground.'},
+  {num:'#734',name:'Yungoos',types:['Normal'],loc:'Route 1, Hau\'oli Outskirts (Day only)',evo:'→ Gumshoos Lv20 (Day)',ability:'Stakeout / Strong Jaw (HA)',moves:['Tackle','Leer','Bite','Pursuit'],tip:'Stakeout doubles damage vs Pokémon switching in — great for predicting switches. Strong Jaw boosts bite moves.'},
+  {num:'#735',name:'Gumshoos',types:['Normal'],loc:'Evolve Yungoos Lv20 (Day)',evo:'Final form',ability:'Stakeout / Strong Jaw (HA)',moves:['Crunch','Hyper Fang','Super Fang','Pursuit'],tip:'Super Fang halves opponent HP regardless of stat — great for catching. Strong Jaw + Crunch hits very hard.'},
+  {num:'#736',name:'Grubbin',types:['Bug'],loc:'Route 1, Hau\'oli Outskirts',evo:'→ Charjabug Lv20 → Vikavolt at Vast Poni Canyon',ability:'Swarm',moves:['Vice Grip','String Shot','Bug Bite','Mud-Slap'],tip:'Very late evolution to Vikavolt — only becomes usable late game near Vast Poni Canyon.'},
+  {num:'#737',name:'Charjabug',types:['Bug','Electric'],loc:'Evolve Grubbin Lv20',evo:'→ Vikavolt at Vast Poni Canyon (near magnetic field)',ability:'Battery',moves:['Spark','Bug Bite','String Shot','Acrobatics'],tip:'Battery ability boosts Special Attack of allies in doubles. Hold off evolving until Vast Poni Canyon.'},
+  {num:'#738',name:'Vikavolt',types:['Bug','Electric'],loc:'Evolve Charjabug near Vast Poni Canyon magnetic field',evo:'Final form',ability:'Levitate',moves:['Thunderbolt','Bug Buzz','Energy Ball','Flash Cannon'],tip:'Excellent special attacker. Levitate gives Ground immunity. One of the best offensive Pokémon for the endgame.'},
+  {num:'#739',name:'Crabrawler',types:['Fighting'],loc:'Berry Fields, Route 2 (under Berry Trees)',evo:'→ Crabominable Lv at Mount Lanakila (Ice Stone)',ability:'Hyper Cutter / Iron Fist (HA)',moves:['Bubble','Leer','Vicegrip','Pursuit'],tip:'Iron Fist HA boosts punching moves. Only evolves at Mount Lanakila — very late.'},
+  {num:'#740',name:'Crabominable',types:['Fighting','Ice'],loc:'Evolve Crabrawler at Mount Lanakila',evo:'Final form',ability:'Hyper Cutter / Iron Fist (HA)',moves:['Ice Hammer','Close Combat','Crabhammer','Ice Punch'],tip:'Iron Fist + Ice Punch + Ice Hammer is solid. However dual Fighting/Ice is defensively weak to many types.'},
+  {num:'#741',name:'Oricorio (Baile)',types:['Fire','Flying'],loc:'Poni Meadow (Red Nectar for Baile form)',evo:'No evolution',ability:'Dancer',moves:['Revelation Dance','Air Slash','Hidden Power','Teeter Dance'],tip:'Dancer copies Dance moves used by any Pokémon in battle — even opponent. Can copy Dragon Dance, Quiver Dance etc. Each form changes Revelation Dance type.'},
+  {num:'#742',name:'Cutiefly',types:['Bug','Fairy'],loc:'Melemele Meadow, Route 2',evo:'→ Ribombee Lv25',ability:'Honey Gather / Shield Dust (HA)',moves:['Absorb','Fairy Wind','Stun Spore','Struggle Bug'],tip:'Shield Dust prevents secondary effects from hitting. Ribombee is excellent vs Dragon types.'},
+  {num:'#743',name:'Ribombee',types:['Bug','Fairy'],loc:'Evolve Cutiefly Lv25 / Poni Meadow',evo:'Final form',ability:'Honey Gather / Shield Dust (HA)',moves:['Dazzling Gleam','Bug Buzz','Quiver Dance','Pollen Puff'],tip:'After Quiver Dance, becomes a fast special sweeper. Pollen Puff heals allies in doubles. Great vs Dragons.'},
+  {num:'#744',name:'Rockruff',types:['Rock'],loc:'Ten Carat Hill, Route 1 (Rare)',evo:'→ Lycanroc (Midday) Lv25 in Sun · (Midnight) in Moon',ability:'Keen Eye / Vital Spirit (HA)',moves:['Tackle','Leer','Sand Attack','Rock Throw'],tip:'In Sun, evolves into Midday Lycanroc. Vital Spirit HA prevents sleep — useful in-game.'},
+  {num:'#745',name:'Lycanroc (Midday)',types:['Rock'],loc:'Evolve Rockruff Lv25 (Sun)',evo:'Final form',ability:'Keen Eye / Sand Rush (HA)',moves:['Stone Edge','Accelerock','Crunch','Fire Fang'],tip:'Sand Rush doubles Speed in sandstorm — pairs well with Tyranitar. Accelerock is priority Rock — excellent for finishing off threats.'},
+  {num:'#746',name:'Wishiwashi',types:['Water'],loc:'Brooklet Hill, Routes 7 & 9',evo:'No evolution',ability:'Schooling',moves:['Water Gun','Aqua Tail','Brine','Soak'],tip:'Schooling activates above Lv20 with more than 25% HP — massive stats in School Form. One of the strongest in-game Water Pokémon once evolved/powered up.'},
+  {num:'#747',name:'Mareanie',types:['Poison','Water'],loc:'Route 9, Melemele Sea (SOS from Corsola)',evo:'→ Toxapex Lv38',ability:'Merciless / Regenerator (HA)',moves:['Poison Pin','Bite','Toxic Spikes','Recover'],tip:'Must be SOS chained from Corsola (Corsola will call Mareanie). Regenerator HA is one of the best defensive abilities for competitive play.'},
+  {num:'#748',name:'Toxapex',types:['Poison','Water'],loc:'Evolve Mareanie Lv38',evo:'Final form',ability:'Merciless / Regenerator (HA)',moves:['Baneful Bunker','Recover','Toxic','Haze'],tip:'Arguably the best defensive Pokémon in Gen 7. Baneful Bunker is like Protect but poisons contact attackers. Regenerator makes it nearly unkillable.'},
+  {num:'#749',name:'Mudbray',types:['Ground'],loc:'Paniola Ranch, Route 12',evo:'→ Mudsdale Lv30',ability:'Own Tempo / Stamina (HA)',moves:['Mud-Slap','Bide','Bulldoze','Double Kick'],tip:'Stamina HA raises Defense every time it takes a hit — becomes an absolute wall. Train one with Stamina ASAP.'},
+  {num:'#750',name:'Mudsdale',types:['Ground'],loc:'Evolve Mudbray Lv30 / Poni Plains',evo:'Final form',ability:'Own Tempo / Stamina (HA)',moves:['High Horsepower','Heavy Slam','Earthquake','Iron Defense'],tip:'Stamina Mudsdale + Sitrus Berry = nearly unkillable. One of the best in-game tanks. Also a Ride Pokémon.'},
+  {num:'#751',name:'Dewpider',types:['Water','Bug'],loc:'Brooklet Hill',evo:'→ Araquanid Lv22',ability:'Water Bubble',moves:['Bubble','Infestation','Bite','Spider Web'],tip:'Water Bubble ability doubles Water move power AND grants burn immunity. Makes Araquanid a surprisingly powerful Water attacker despite low Sp. Atk.'},
+  {num:'#752',name:'Araquanid',types:['Water','Bug'],loc:'Evolve Dewpider Lv22',evo:'Final form',ability:'Water Bubble',moves:['Liquidation','Leech Life','Mirror Coat','Toxic'],tip:'Water Bubble doubles Liquidation damage effectively giving it 160 BP — comparable to Z-moves. Excellent niche pick.'},
+  {num:'#753',name:'Fomantis',types:['Grass'],loc:'Lush Jungle, Route 5',evo:'→ Lurantis Lv34 (Day)',ability:'Leaf Guard',moves:['Fury Cutter','Absorb','Sweet Scent','Razor Leaf'],tip:'Must level up during the day to evolve. Lurantis has solid Attack and learns Solar Blade — strong physical Grass move.'},
+  {num:'#754',name:'Lurantis',types:['Grass'],loc:'Evolve Fomantis Lv34 (Day) / Lush Jungle (rare)',evo:'Final form',ability:'Leaf Guard / Contrary (HA)',moves:['Solar Blade','Leaf Blade','Synthesis','Petal Dance'],tip:'Contrary HA makes Leaf Storm raise Sp. Atk instead of lowering it — competitive powerhouse. In-game Solar Blade + Synthesis is very reliable.'},
+  {num:'#755',name:'Morelull',types:['Grass','Fairy'],loc:'Lush Jungle, Poni Meadow (Night)',evo:'→ Shiinotic Lv24',ability:'Illuminate / Effect Spore (HA)',moves:['Absorb','Stun Spore','Ingrain','Astonish'],tip:'Illuminate doubles encounter rate — useful or annoying depending on needs. Shiinotic gets Spore which is 100% accurate sleep.'},
+  {num:'#756',name:'Shiinotic',types:['Grass','Fairy'],loc:'Evolve Morelull Lv24 / Lush Jungle',evo:'Final form',ability:'Illuminate / Effect Spore (HA)',moves:['Spore','Moonblast','Giga Drain','Strength Sap'],tip:'Spore is 100% accurate sleep — best status move in the game. Strength Sap heals equal to opponent\'s Attack stat.'},
+  {num:'#757',name:'Salandit',types:['Poison','Fire'],loc:'Wela Volcano Park, Route 8',evo:'→ Salazzle Lv33 (Female only!)',ability:'Corrosion',moves:['Flame Burst','Smog','Toxic','Venoshock'],tip:'Only female Salandit evolve! Corrosion ability can poison Steel and Poison types — unique in the game. Farm females by SOS chaining.'},
+  {num:'#758',name:'Salazzle',types:['Poison','Fire'],loc:'Evolve female Salandit Lv33',evo:'Final form',ability:'Corrosion',moves:['Flamethrower','Sludge Bomb','Nasty Plot','Encore'],tip:'After a Nasty Plot, Salazzle is devastatingly fast and powerful. Corrosion + Toxic poisons anything. Great vs Fairy types.'},
+  {num:'#759',name:'Stufful',types:['Normal','Fighting'],loc:'Route 8, Akala Outskirts',evo:'→ Bewear Lv27',ability:'Klutz / Fluffy (HA)',moves:['Tackle','Leer','Bide','Payback'],tip:'Fluffy HA halves damage from contact moves but doubles Fire weakness — risky but good for physical walls.'},
+  {num:'#760',name:'Bewear',types:['Normal','Fighting'],loc:'Evolve Stufful Lv27',evo:'Final form',ability:'Klutz / Fluffy (HA)',moves:['Double-Edge','Hammer Arm','Superpower','Ice Punch'],tip:'Extremely high Attack and HP. Fluffy makes it a tank vs physical attackers. One of Team Skull\'s signature Pokémon.'},
+  {num:'#761',name:'Bounsweet',types:['Grass'],loc:'Lush Jungle, Route 5 (NPC trade)',evo:'→ Steenee Lv18 → Tsareena (w/ Stomp)',ability:'Leaf Guard / Sweet Veil (HA)',moves:['Splash','Rapid Spin','Razor Leaf','Magical Leaf'],tip:'Rapid Spin from Bounsweet/Steenee is a nice bonus. Sweet Veil prevents your team from falling asleep in doubles.'},
+  {num:'#762',name:'Steenee',types:['Grass'],loc:'Evolve Bounsweet Lv18',evo:'→ Tsareena (learn Stomp)',ability:'Leaf Guard / Sweet Veil (HA)',moves:['Double Slap','Razor Leaf','Sweet Scent','Rapid Spin'],tip:'Must learn Stomp to evolve into Tsareena — it gets this move naturally at a level before evolution.'},
+  {num:'#763',name:'Tsareena',types:['Grass'],loc:'Evolve Steenee (learn Stomp)',evo:'Final form',ability:'Leaf Guard / Sweet Veil (HA)',moves:['Trop Kick','High Jump Kick','Power Whip','Rapid Spin'],tip:'Trop Kick always lowers opponent\'s Attack on hit. High Jump Kick + Trop Kick covers enormous type range.'},
+  {num:'#764',name:'Comfey',types:['Fairy'],loc:'Lush Jungle, Hano Grand Resort',evo:'No evolution',ability:'Flower Veil / Triage (HA)',moves:['Draining Kiss','Floral Healing','Leech Seed','Calm Mind'],tip:'Triage HA gives healing moves +3 priority — Draining Kiss and Floral Healing go first. Excellent support Pokémon.'},
+  {num:'#765',name:'Oranguru',types:['Normal','Psychic'],loc:'Lush Jungle (Sun Exclusive, Night)',evo:'No evolution',ability:'Inner Focus / Telepathy (HA)',moves:['Instruct','Psychic','Calm Mind','Foul Play'],tip:'Sun Exclusive. Instruct makes the target use its last move again — wild doubles utility. Foul Play uses opponent\'s Attack for damage.'},
+  {num:'#766',name:'Passimian',types:['Fighting'],loc:'Route 8 (Moon Exclusive)',evo:'No evolution',ability:'Receiver',moves:['Bulk Up','Close Combat','Rock Slide','U-turn'],tip:'Moon exclusive so not available in Sun without trading. Receiver ability inherits the ability of a fainted ally in doubles.'},
+  {num:'#767',name:'Wimpod',types:['Bug','Water'],loc:'Route 8, Poni Breaker Coast',evo:'→ Golisopod Lv30',ability:'Wimp Out',moves:['Struggle Bug','Sand Attack','Sucker Punch','First Impression'],tip:'Wimp Out switches out when HP drops below 50% — both a disadvantage and can be exploited strategically.'},
+  {num:'#768',name:'Golisopod',types:['Bug','Water'],loc:'Evolve Wimpod Lv30',evo:'Final form',ability:'Emergency Exit',moves:['First Impression','Liquidation','Leech Life','Sucker Punch'],tip:'First Impression is 90 BP Bug move that always goes first on switch-in. Emergency Exit switches you out below 50% HP — can be used strategically.'},
+  {num:'#769',name:'Sandygast',types:['Ghost','Ground'],loc:'Hano Grand Resort Beach, Route 13',evo:'→ Palossand Lv42',ability:'Water Compaction / Sand Veil (HA)',moves:['Astonish','Mud-Slap','Bulldoze','Sand Tomb'],tip:'Water Compaction raises Defense x2 per Water hit — could tank hits to raise stats. Interesting defensive Pokémon.'},
+  {num:'#770',name:'Palossand',types:['Ghost','Ground'],loc:'Evolve Sandygast Lv42',evo:'Final form',ability:'Water Compaction / Sand Veil (HA)',moves:['Shadow Ball','Earth Power','Shore Up','Amnesia'],tip:'Shore Up heals 50% normally, 66% in sandstorm. Shore Up + Water Compaction makes it surprisingly bulky. Ghost/Ground is an excellent offensive typing.'},
+  {num:'#771',name:'Pyukumuku',types:['Water'],loc:'Hano Grand Resort, Melemele Sea',evo:'No evolution',ability:'Innards Out / Unaware (HA)',moves:['Tackle','Harden','Bide','Purify'],tip:'Innards Out deals damage equal to remaining HP when KO\'d — burst counter damage. Unaware ignores stat boosts of opponent. Mostly a gimmick Pokémon.'},
+  {num:'#772',name:'Type: Null',types:['Normal'],loc:'Aether Foundation (given by Gladion post-E4)',evo:'→ Silvally (max Friendship)',ability:'Battle Armor',moves:['Tackle','Crush Claw','Razor Wind','Double Hit'],tip:'Post-game gift. Hold a Memory item to change type. Silvally is the most customisable Pokémon in the game for filling team gaps.'},
+  {num:'#773',name:'Silvally',types:['Normal'],loc:'Evolve Type: Null at max Friendship',evo:'Final form',ability:'RKS System',moves:['Multi-Attack','Crunch','Ice Beam','Flamethrower'],tip:'Multi-Attack changes type to match the held Memory item and is extremely powerful. Use Silvally to fill any type gap in your team.'},
+  {num:'#774',name:'Minior',types:['Rock','Flying'],loc:'Mount Hokulani, Poni Meadow',evo:'No evolution',ability:'Shields Down',moves:['Tackle','Self-Destruct','Swift','Ancient Power'],tip:'Shields Down protects from status while at full HP in Meteor form. Below 50% HP transforms to Core form with better speed. Stellar power spike when core is exposed.'},
+  {num:'#775',name:'Komala',types:['Normal'],loc:'Route 11, Malie Garden',evo:'No evolution',ability:'Comatose',moves:['Tackle','Yawn','Rollout','Slam'],tip:'Comatose keeps it permanently asleep — immune to all other status conditions. Can attack while asleep. Snore and Sleep Talk work without penalties.'},
+  {num:'#776',name:'Turtonator',types:['Fire','Dragon'],loc:'Wela Volcano Park (Sun Exclusive)',evo:'No evolution',ability:'Shell Armor',moves:['Shell Trap','Flamethrower','Dragon Pulse','Iron Defense'],tip:'Sun Exclusive. Shell Trap sets a trap — if hit by a physical move, deals 150 BP Fire damage. Fire/Dragon has excellent offensive coverage.'},
+  {num:'#777',name:'Togedemaru',types:['Electric','Steel'],loc:'Route 8, Blush Mountain',evo:'No evolution',ability:'Iron Barbs / Sturdy / Lightning Rod (HA)',moves:['Thunderbolt','Iron Head','Spiky Shield','Zing Zap'],tip:'Lightning Rod redirects Electric moves to Togedemaru and raises Sp. Atk — useful in doubles. Zing Zap is signature high-power Electric with flinch.'},
+  {num:'#778',name:'Mimikyu',types:['Ghost','Fairy'],loc:'Thrifty Megamart (Abandoned)',evo:'No evolution',ability:'Disguise',moves:['Play Rough','Shadow Sneak','Swords Dance','Wood Hammer'],tip:'Disguise absorbs first hit for free — perfect for setting up Swords Dance safely. Play Rough after +2 Attack is devastating. One of the best in-game Pokémon.'},
+  {num:'#779',name:'Bruxish',types:['Water','Psychic'],loc:'Routes 8 & 9 (fishing)',evo:'No evolution',ability:'Dazzling / Strong Jaw (HA)',moves:['Aqua Jet','Psychic Fangs','Crunch','Ice Fang'],tip:'Dazzling prevents priority moves — opponent can\'t use Quick Attack, Sucker Punch etc. Strong Jaw + Psychic Fangs is powerful.'},
+  {num:'#780',name:'Drampa',types:['Normal','Dragon'],loc:'Mount Lanakila (Sun only, during storms in game)',evo:'No evolution',ability:'Berserk / Cloud Nine (HA)',moves:['Dragon Breath','Hyper Voice','Berserk','Dragon Pulse'],tip:'Berserk raises Sp. Atk when HP drops below 50% — triggers itself for power boost. Good special attacker for late game.'},
+  {num:'#781',name:'Dhelmise',types:['Ghost','Grass'],loc:'Seafolk Village (fishing)',evo:'No evolution',ability:'Steelworker',moves:['Power Whip','Shadow Ball','Anchor Shot','Energy Ball'],tip:'Steelworker boosts Steel moves by 50% — Dhelmise using Anchor Shot hits like a truck. Ghost/Grass is an unusual and threatening typing.'},
+  {num:'#782',name:'Jangmo-o',types:['Dragon'],loc:'Vast Poni Canyon',evo:'→ Hakamo-o Lv35 → Kommo-o Lv45',ability:'Bulletproof / Soundproof (HA)',moves:['Tackle','Leer','Bide','Headbutt'],tip:'Bulletproof blocks ball and bomb moves. Soundproof blocks sound moves. Both are useful depending on the Battle Tree meta.'},
+  {num:'#783',name:'Hakamo-o',types:['Dragon','Fighting'],loc:'Vast Poni Canyon / Evolve Jangmo-o Lv35',evo:'→ Kommo-o Lv45',ability:'Bulletproof / Soundproof (HA)',moves:['Dragon Claw','Drain Punch','Sky Uppercut','Iron Defense'],tip:'Dragon/Fighting is a phenomenal offensive typing. Drain Punch provides recovery to survive longer.'},
+  {num:'#784',name:'Kommo-o',types:['Dragon','Fighting'],loc:'Evolve Hakamo-o Lv45 / Vast Poni Canyon (rare)',evo:'Final form',ability:'Bulletproof / Soundproof (HA)',moves:['Clanging Scales','Close Combat','Dragon Dance','Flash Cannon'],tip:'After Dragon Dance, one of the most dangerous Pokémon in the game. Clangorous Soulblaze Z-Move also boosts all your stats. Bulletproof vs common ball/bomb moves.'},
+  {num:'#785',name:'Tapu Koko',types:['Electric','Fairy'],loc:'Ruins of Conflict (post-game, Melemele Island)',evo:'No evolution',ability:'Electric Surge',moves:['Nature\'s Madness','Thunderbolt','Dazzling Gleam','Roost'],tip:'Electric Surge sets Electric Terrain for 5 turns. Nature\'s Madness cuts opponent HP in half (always). Required to catch for Pokédex completion.'},
+  {num:'#786',name:'Tapu Lele',types:['Psychic','Fairy'],loc:'Ruins of Life (post-game, Akala Island)',evo:'No evolution',ability:'Psychic Surge',moves:['Psychic','Moonblast','Extrasensory','Calm Mind'],tip:'Psychic Surge sets Psychic Terrain. Prevents priority moves and boosts Psychic moves. Very powerful competitive Pokémon.'},
+  {num:'#787',name:'Tapu Bulu',types:['Grass','Fairy'],loc:'Ruins of Abundance (post-game, Ula\'ula Island)',evo:'No evolution',ability:'Grassy Surge',moves:['Wood Hammer','Horn Leech','Megahorn','Dazzling Gleam'],tip:'Grassy Surge sets Grassy Terrain — heals all grounded Pokémon each turn. Powerful physical Grass attacker.'},
+  {num:'#788',name:'Tapu Fini',types:['Water','Fairy'],loc:'Ruins of Hope (post-game, Poni Island)',evo:'No evolution',ability:'Misty Surge',moves:['Surf','Moonblast','Muddy Water','Calm Mind'],tip:'Misty Surge halves damage from Dragon moves on grounded Pokémon and prevents status conditions. Defensive team anchor.'},
+  {num:'#789',name:'Cosmog',types:['Psychic'],loc:'Given by Lillie (Lake of the Moone, story)',evo:'→ Cosmoem Lv43 → Solgaleo Lv53 (Sun)',ability:'Unaware',moves:['Splash','Teleport'],tip:'Only knows Splash at first. Evolves into your game mascot. Don\'t worry — Solgaleo is incredibly powerful.'},
+  {num:'#790',name:'Cosmoem',types:['Psychic'],loc:'Evolve Cosmog Lv43',evo:'→ Solgaleo Lv53 (Sun)',ability:'Sturdy',moves:['Teleport','Splash'],tip:'Extremely high Defense and Sp. Defense. Basically a transition form. Hang tight until Lv53.'},
+  {num:'#791',name:'Solgaleo',types:['Psychic','Steel'],loc:'Altar of the Sunne (story, Lv55) / Evolve Cosmoem Lv53',evo:'Final form',ability:'Full Metal Body',moves:['Sunsteel Strike','Cosmic Power','Morning Sun','Psychic'],tip:'Full Metal Body prevents stat reduction from opponent moves/abilities. Sunsteel Strike ignores target\'s ability. Exceptional legendary — use it.'},
+  {num:'#793',name:'Nihilego',types:['Rock','Poison'],loc:'Aether Foundation (story), post-game Diglett\'s Tunnel & Ultra Space',evo:'No evolution',ability:'Beast Boost',moves:['Power Gem','Sludge Bomb','Thunder','Stealth Rock'],tip:'Beast Boost raises highest stat when it KOs an opponent. Highest Sp. Defense of any Pokémon at launch. Great for competitive if you use UBs.'},
+  {num:'#795',name:'Pheromosa',types:['Bug','Fighting'],loc:'Post-game Ultra Space (Ultra Wormhole events)',evo:'No evolution',ability:'Beast Boost',moves:['High Jump Kick','U-turn','Lunge','Triple Kick'],tip:'Absurd 151 base Speed. Fastest naturally occurring Pokémon in Gen 7. Frail but obliterates almost everything. Hard to catch.'},
+  {num:'#796',name:'Xurkitree',types:['Electric'],loc:'Post-game Ultra Space (Lush Jungle/Memorial Hill wormholes)',evo:'No evolution',ability:'Beast Boost',moves:['Thunderbolt','Energy Ball','Tail Glow','Hypnosis'],tip:'After Tail Glow (+3 Sp. Atk), Xurkitree hits 395 Sp. Atk — one of the strongest special attackers ever. Hypnosis lands first for setup.'},
+
+  // Alolan Forms
+  {num:'#019A',name:'Rattata-Alola',types:['Dark','Normal'],loc:'Route 1 (Night), Ten Carat Hill',evo:'→ Raticate-Alola Lv20 (Night)',ability:'Gluttony / Hustle (HA)',moves:['Tackle','Pursuit','Bite','Quick Attack'],tip:'Only appears at night. Hustle HA raises Attack by 50% but lowers accuracy — risky but powerful.'},
+  {num:'#020A',name:'Raticate-Alola',types:['Dark','Normal'],loc:'Evolve Rattata-Alola Lv20 (Night) / various buildings',evo:'Final form',ability:'Gluttony / Hustle (HA)',moves:['Crunch','Hyper Fang','Double-Edge','Sucker Punch'],tip:'Dark typing adds useful coverage. Not a top-tier pick but accessible early and fine for filling team slots mid-game.'},
+  {num:'#026A',name:'Raichu-Alola',types:['Electric','Psychic'],loc:'Evolve Pikachu with Thunder Stone in Alola',evo:'Final form',ability:'Surge Surfer',moves:['Thunderbolt','Psychic','Nasty Plot','Surf'],tip:'Surge Surfer doubles Speed on Electric Terrain. With Tapu Koko setting terrain, Alolan Raichu becomes blindingly fast. Cuter AND better.'},
+  {num:'#027A',name:'Sandshrew-Alola',types:['Ice','Steel'],loc:'Route 8 (Moon exclusive) / trade from Moon',evo:'→ Sandslash-Alola (Ice Stone)',ability:'Snow Cloak / Slush Rush (HA)',moves:['Scratch','Defense Curl','Powder Snow','Ice Ball'],tip:'Moon exclusive — need to trade to Sun. Ice/Steel is a defensively awkward typing but Slush Rush in Hail is competitive.'},
+  {num:'#028A',name:'Sandslash-Alola',types:['Ice','Steel'],loc:'Evolve Sandshrew-Alola with Ice Stone (Moon exclusive)',evo:'Final form',ability:'Snow Cloak / Slush Rush (HA)',moves:['Icicle Crash','Iron Head','Slash','Shadow Claw'],tip:'Solid physical attacker. Slush Rush HA doubles Speed in Hail — pairs with Hail setter in competitive.'},
+  {num:'#037A',name:'Vulpix-Alola',types:['Ice'],loc:'Mount Lanakila, Route 6 (Moon exclusive)',evo:'→ Ninetales-Alola (Ice Stone)',ability:'Snow Cloak / Snow Warning (HA)',moves:['Powder Snow','Tail Whip','Baby-Doll Eyes','Hex'],tip:'Moon exclusive. Snow Warning HA summons Hail on switch-in — great for Blizzard spam (100% accurate in Hail).'},
+  {num:'#038A',name:'Ninetales-Alola',types:['Ice','Fairy'],loc:'Evolve Vulpix-Alola with Ice Stone (Moon exclusive)',evo:'Final form',ability:'Snow Cloak / Snow Warning (HA)',moves:['Blizzard','Moonblast','Dazzling Gleam','Aurora Veil'],tip:'Moon exclusive but appears on Kukui\'s team in Sun! Aurora Veil sets up Reflect+Light Screen simultaneously in Hail. Competitive staple.'},
+  {num:'#050A',name:'Diglett-Alola',types:['Ground','Steel'],loc:'Diglett\'s Tunnel',evo:'→ Dugtrio-Alola Lv26',ability:'Tangling Hair / Sand Veil (HA)',moves:['Astonish','Mud-Slap','Bite','Metal Claw'],tip:'Tangling Hair lowers Speed of contact attackers. Arena Trap on Dugtrio is notorious for trapping opponents.'},
+  {num:'#051A',name:'Dugtrio-Alola',types:['Ground','Steel'],loc:'Evolve Diglett-Alola Lv26 / Haina Desert',evo:'Final form',ability:'Tangling Hair / Sand Veil (HA)',moves:['Earthquake','Iron Head','Stone Edge','Sucker Punch'],tip:'Arena Trap traps non-flying, non-levitating opponents. Iron Head on a fast Dugtrio is very strong. Good for trapping key threats.'},
+  {num:'#052A',name:'Meowth-Alola',types:['Dark'],loc:'Malie City (given by NPC)',evo:'→ Persian-Alola Lv28 (Friendship)',ability:'Pickup / Rattled (HA)',moves:['Scratch','Growl','Bite','Fake Out'],tip:'Given free in Malie City. Evolves with high friendship. Persian-Alola joins Nanu\'s team — a bit of lore relevance.'},
+  {num:'#053A',name:'Persian-Alola',types:['Dark'],loc:'Evolve Meowth-Alola (Friendship) / Po Town (Nanu\'s)',evo:'Final form',ability:'Fur Coat / Rattled (HA)',moves:['Slash','Night Slash','Parting Shot','Nasty Plot'],tip:'Fur Coat halves physical damage — surprisingly bulky. Parting Shot lowers opponent\'s Attack+Sp.Atk on switch — great pivot move.'},
+  {num:'#074A',name:'Geodude-Alola',types:['Rock','Electric'],loc:'Mount Hokulani, Blush Mountain',evo:'→ Graveler-Alola Lv25 → Golem-Alola (trade)',ability:'Magnet Pull / Galvanize (HA)',moves:['Rock Throw','Spark','Rock Blast','Smack Down'],tip:'Galvanize HA turns Normal moves into Electric and boosts them 20%. Extreme Speed becomes a 130 BP Electric move with Galvanize.'},
+  {num:'#076A',name:'Golem-Alola',types:['Rock','Electric'],loc:'Evolve Graveler-Alola via trade',evo:'Final form',ability:'Magnet Pull / Galvanize (HA)',moves:['Tectonic Rage','Wild Charge','Stone Edge','Explosion'],tip:'Tectonic Rage Z-Move + Galvanize Explosion converted to Electric = chaos. Trade evolution required. Ask a friend or use Link Trade in Festival Plaza.'},
+  {num:'#088A',name:'Grimer-Alola',types:['Poison','Dark'],loc:'Malie City (given by NPC)',evo:'→ Muk-Alola Lv38',ability:'Poison Touch / Power of Alchemy (HA)',moves:['Pound','Poison Gas','Bite','Disable'],tip:'Also given free in Malie City. Poison/Dark is an excellent defensive typing with only Ground as weakness.'},
+  {num:'#089A',name:'Muk-Alola',types:['Poison','Dark'],loc:'Evolve Grimer-Alola Lv38',evo:'Final form',ability:'Poison Touch / Power of Alchemy (HA)',moves:['Poison Jab','Crunch','Shadow Sneak','Acid Spray'],tip:'One of the best in-game Pokémon available for free. Shadow Sneak + Crunch + Poison Jab covers Ghost, Psychic, Fairy, Grass. Only weakness is Ground.'},
+  {num:'#105A',name:'Marowak-Alola',types:['Fire','Ghost'],loc:'Wela Volcano Park, Thrifty Megamart',evo:'Final form (level up Cubone Lv28 at night in Alola)',ability:'Cursed Body / Lightning Rod (HA)',moves:['Shadow Bone','Flare Blitz','Bonemerang','Swords Dance'],tip:'Fire/Ghost is an incredible offensive type — hits 9 types for neutral+ damage. Shadow Bone may lower Defense. Lightning Rod redirects Electric.'},
+  {num:'#110A',name:'Weezing-Alola',types:['Poison','Fairy'],loc:'N/A (not in base Sun)',evo:'No evolution',ability:'Levitate',moves:['Sludge','Strange Steam','Toxic','Will-O-Wisp'],tip:'Not available in base Sun/Moon — only in later games. Included here for reference.'},
+
+  // Classic Pokémon available in Alola
+  {num:'#001',name:'Bulbasaur',types:['Grass','Poison'],loc:'Not available in base Sun (requires Bank transfer)',evo:'Via Pokémon Bank',ability:'Overgrow / Chlorophyll (HA)',moves:['Vine Whip','Razor Leaf','Synthesis','Giga Drain'],tip:'Transfer from earlier games via Pokémon Bank. Starter of Gen 1 — not catchable in Alola.'},
+  {num:'#016',name:'Pidgey',types:['Normal','Flying'],loc:'Route 2 (Rare)',evo:'→ Pidgeotto Lv18 → Pidgeot Lv36',ability:'Keen Eye / Big Pecks (HA)',moves:['Tackle','Sand Attack','Gust','Quick Attack'],tip:'More of a filler early Pokémon. Outclassed by Pikipek line for the Alola run but available if you like classic mons.'},
+  {num:'#025',name:'Pikachu',types:['Electric'],loc:'Route 1 (Rare), Hau\'oli Outskirts (SOS)',evo:'→ Raichu (Thunder Stone) → Raichu-Alola (Thunder Stone in Alola)',ability:'Static / Lightning Rod (HA)',moves:['Quick Attack','Thunderbolt','Iron Tail','Thunder'],tip:'Pikachu evolving in Alola gives Alolan Raichu. Special Pikachu with hats can be obtained via events — they can\'t evolve.'},
+  {num:'#035',name:'Clefairy',types:['Fairy'],loc:'Mount Hokulani (rare)',evo:'→ Clefable (Moon Stone)',ability:'Cute Charm / Magic Guard (HA)',moves:['Sing','Doubleslap','Minimize','Metronome'],tip:'Magic Guard HA makes it immune to indirect damage. Clefable with Magic Guard is competitive staple but hard to get in-game.'},
+  {num:'#039',name:'Jigglypuff',types:['Normal','Fairy'],loc:'Route 3, Ten Carat Hill',evo:'→ Wigglytuff (Moon Stone)',ability:'Cute Charm / Frisk (HA)',moves:['Sing','Defense Curl','Pound','Play Rough'],tip:'Sing + Pound for catching wild Pokémon. Wigglytuff isn\'t top tier but the Fairy typing helps vs Dragon/Dark.'},
+  {num:'#041',name:'Zubat',types:['Poison','Flying'],loc:'Verdant Cavern, Seaward Cave, Vast Poni Canyon',evo:'→ Golbat Lv22 → Crobat (Friendship)',ability:'Inner Focus / Infiltrator (HA)',moves:['Leech Life','Supersonic','Bite','Wing Attack'],tip:'Crobat has excellent Speed and is actually useful in-game. Evolves via friendship — keep it happy.'},
+  {num:'#043',name:'Oddish',types:['Grass','Poison'],loc:'Lush Jungle, Route 2 (Night)',evo:'→ Gloom Lv21 → Vileplume (Leaf Stone) / Bellossom (Sun Stone)',ability:'Chlorophyll / Run Away (HA)',moves:['Absorb','Sleep Powder','Poison Powder','Acid'],tip:'Sleep Powder at 75% accuracy is still one of the best in-game status moves. Vileplume has better offensive stats; Bellossom has better Sp. Def.'},
+  {num:'#046',name:'Paras',types:['Bug','Grass'],loc:'Lush Jungle',evo:'→ Parasect Lv24',ability:'Effect Spore / Dry Skin (HA)',moves:['Scratch','Absorb','Spore','X-Scissor'],tip:'Spore is 100% accurate sleep — one of the best catching aids in the game. Parasect is weak defensively but Spore is always useful.'},
+  {num:'#054',name:'Psyduck',types:['Water'],loc:'Kala\'e Bay, Route 14, Seaward Cave',evo:'→ Golduck Lv33',ability:'Damp / Swift Swim (HA)',moves:['Water Pulse','Confusion','Disable','Screech'],tip:'Golduck is a decent Water type available reasonably early. Confusion chance and Disable have some utility.'},
+  {num:'#060',name:'Poliwag',types:['Water'],loc:'Route 2, Brooklet Hill',evo:'→ Poliwhirl Lv25 → Poliwrath (Water Stone) / Politoed (King\'s Rock trade)',ability:'Water Absorb / Swift Swim (HA)',moves:['Bubble','Hypnosis','Water Gun','Double Slap'],tip:'Hypnosis for catching. Water Absorb makes Poliwrath immune to Water — useful switch-in.'},
+  {num:'#063',name:'Abra',types:['Psychic'],loc:'Route 2 (Rare)',evo:'→ Kadabra Lv16 → Alakazam (trade)',ability:'Synchronize / Magic Guard (HA)',moves:['Teleport','Hidden Power','Psybeam','Psychic'],tip:'Abra only knows Teleport — use a weak move or False Swipe to catch. Magic Guard HA Alakazam is very powerful if you can trade-evolve.'},
+  {num:'#066',name:'Machop',types:['Fighting'],loc:'Trade at Hau\'oli City (Spearow for Machop)',evo:'→ Machoke Lv28 → Machamp (trade)',ability:'Guts / No Guard (HA)',moves:['Low Kick','Leer','Focus Energy','Karate Chop'],tip:'Free early trade gives you an Exp-boosted Machop. No Guard makes all moves 100% accurate — One Hit KO moves included if Machamp learns them.'},
+  {num:'#079',name:'Slowpoke',types:['Water','Psychic'],loc:'Seaward Cave, Kala\'e Bay',evo:'→ Slowbro Lv37 / Slowking (King\'s Rock trade)',ability:'Oblivious / Regenerator (HA)',moves:['Confusion','Water Gun','Yawn','Amnesia'],tip:'Regenerator HA heals 33% HP when switching out — makes Slowbro near-unkillable with some switching. Yawn for catching.'},
+  {num:'#081',name:'Magnemite',types:['Electric','Steel'],loc:'Paniola Ranch, Blush Mountain',evo:'→ Magneton Lv30 → Magnezone (near Vast Poni Canyon magnetic field)',ability:'Magnet Pull / Analytic (HA)',moves:['Thundershock','Supersonic','Thunder Wave','Spark'],tip:'Magnet Pull traps Steel-type Pokémon. Magnezone evolves only near the magnetic field at Vast Poni Canyon.'},
+  {num:'#083',name:'Farfetch\'d',types:['Normal','Flying'],loc:'Not available in Alola wild',evo:'No evolution',ability:'Keen Eye / Defiant (HA)',moves:['Slash','Swords Dance','Brave Bird','Night Slash'],tip:'Not available in Sun/Moon without Bank transfer. For completeness.'},
+  {num:'#090',name:'Shellder',types:['Water'],loc:'Route 9, Melemele Sea (fishing)',evo:'→ Cloyster (Water Stone)',ability:'Shell Armor / Skill Link (HA)',moves:['Tackle','Icicle Spear','Water Gun','Withdraw'],tip:'Skill Link HA makes Icicle Spear always hit 5 times — powerful. Cloyster is fast and surprisingly effective physically.'},
+  {num:'#092',name:'Gastly',types:['Ghost','Poison'],loc:'Memorial Hill, Thrifty Megamart, Poni Coast',evo:'→ Haunter Lv25 → Gengar (trade)',ability:'Levitate',moves:['Lick','Spite','Mean Look','Hypnosis'],tip:'Gengar is one of the best Pokémon in the game — fast, powerful special attacker. Requires trade evolution. Mean Look for catching roaming Pokémon.'},
+  {num:'#095',name:'Onix',types:['Rock','Ground'],loc:'Ten Carat Hill (inner cave)',evo:'→ Steelix (Metal Coat trade)',ability:'Rock Head / Sturdy (HA)',moves:['Rock Throw','Tackle','Screech','Bind'],tip:'Sturdy ensures it always survives a hit from full HP. More useful as Steelix — trade with Metal Coat to evolve.'},
+  {num:'#098',name:'Krabby',types:['Water'],loc:'Melemele Sea, Hano Beach (fishing)',evo:'→ Kingler Lv28',ability:'Hyper Cutter / Shell Armor (HA)',moves:['Bubble','Leer','Vice Grip','Harden'],tip:'Hyper Cutter prevents Attack lowering. Kingler has massive Attack but poor Speed — niche but fun. Crabhammer hits very hard.'},
+  {num:'#102',name:'Exeggcute',types:['Grass','Psychic'],loc:'Lush Jungle, Exeggutor Island',evo:'→ Exeggutor (Leaf Stone) → Exeggutor-Alola (Leaf Stone in Alola)',ability:'Chlorophyll / Harvest (HA)',moves:['Barrage','Hypnosis','Reflect','Leech Seed'],tip:'Alolan Exeggutor is one of the tallest Pokémon ever. Harvest HA restores consumed Berries each turn in Sun — essentially infinite Berries.'},
+  {num:'#103A',name:'Exeggutor-Alola',types:['Grass','Dragon'],loc:'Exeggutor Island (Poni area)',evo:'Final form — Leaf Stone in Alola',ability:'Frisk / Harvest (HA)',moves:['Dragon Hammer','Leaf Storm','Wood Hammer','Draco Meteor'],tip:'Grass/Dragon is a unique typing. Dragon Hammer is a unique physical Dragon move. Enormous Sp. Atk. Harvest HA + Sitrus Berry = free healing.'},
+  {num:'#104',name:'Cubone',types:['Ground'],loc:'Wela Volcano Park, Ten Carat Hill',evo:'→ Marowak Lv28 (day) or Marowak-Alola (night in Alola)',ability:'Rock Head / Battle Armor (HA)',moves:['Growl','Tail Whip','Bone Club','Headbutt'],tip:'Level up at night in Alola to get Marowak-Alola (Fire/Ghost). Level up during day for regular Marowak. Choose carefully!'},
+  {num:'#108',name:'Lickitung',types:['Normal'],loc:'Route 2 (SOS from Diglett?), not easily available',evo:'→ Lickilicky (learn Rollout)',ability:'Own Tempo / Cloud Nine (HA)',moves:['Lick','Supersonic','Knock Off','Slam'],tip:'Not commonly available in Sun without SOS chaining. Not a priority unless you want Lickilicky.'},
+  {num:'#111',name:'Rhyhorn',types:['Ground','Rock'],loc:'Poni Plains',evo:'→ Rhydon Lv42 → Rhyperior (Protector trade)',ability:'Lightning Rod / Reckless (HA)',moves:['Horn Attack','Stomp','Fury Attack','Bulldoze'],tip:'Reckless HA boosts recoil moves. Rock Blast + Reckless is wild. Solid Rock-type attacker available on Poni Island.'},
+  {num:'#113',name:'Chansey',types:['Normal'],loc:'Route 2 (Rare), Sandy Cave, Paniola Ranch (SOS)',evo:'→ Blissey (Friendship)',ability:'Natural Cure / Serene Grace (HA)',moves:['Egg Bomb','Minimize','Soft-Boiled','Helping Hand'],tip:'Serene Grace doubles chance of secondary effects. Body Slam from Serene Grace = 60% paralysis. Blissey is the best special wall in the game.'},
+  {num:'#116',name:'Horsea',types:['Water'],loc:'Kala\'e Bay, Melemele Sea (fishing)',evo:'→ Seadra Lv32 → Kingdra (Dragon Scale trade)',ability:'Swift Swim / Damp (HA)',moves:['Bubble','Smokescreen','Water Gun','Dragon Breath'],tip:'Kingdra with Swift Swim in Rain is excellent. Dragon/Water has only Fairy weakness. Trade with Dragon Scale to get Kingdra.'},
+  {num:'#118',name:'Goldeen',types:['Water'],loc:'Various routes (fishing)',evo:'→ Seaking Lv33',ability:'Swift Swim / Lightning Rod (HA)',moves:['Peck','Tail Whip','Water Sport','Supersonic'],tip:'Lightning Rod redirects Electric moves — handy in doubles. Seaking is average but Lightning Rod utility is solid.'},
+  {num:'#120',name:'Staryu',types:['Water'],loc:'Hano Grand Resort (night, fishing)',evo:'→ Starmie (Water Stone)',ability:'Illuminate / Analytic (HA)',moves:['Tackle','Rapid Spin','Recover','Minimize'],tip:'Recover gives Starmie essentially free healing. Rapid Spin removes entry hazards. Starmie is a top-tier Water/Psychic attacker.'},
+  {num:'#127',name:'Pinsir',types:['Bug'],loc:'Poni Meadow (Sun Exclusive)',evo:'No evolution (Mega in other games)',ability:'Hyper Cutter / Moxie (HA)',moves:['Vicegrip','Seismic Toss','Focus Energy','X-Scissor'],tip:'Sun exclusive. Moxie raises Attack after KO — snowballs hard. Return + Moxie + X-Scissor is very strong late game.'},
+  {num:'#128',name:'Tauros',types:['Normal'],loc:'Paniola Ranch, Poni Plains',evo:'No evolution',ability:'Intimidate / Anger Point (HA)',moves:['Tackle','Horn Attack','Scary Face','Pursuit'],tip:'One of the physically strongest Normal types. Intimidate is always useful. Anger Point raises Attack to max when hit by a critical hit.'},
+  {num:'#131',name:'Lapras',types:['Water','Ice'],loc:'Poni Wilds (post-game) / Gift from game',evo:'No evolution',ability:'Water Absorb / Hydration (HA)',moves:['Surf','Ice Beam','Sing','Thunderbolt'],tip:'One of the best all-round Water types. Ice Beam + Surf has phenomenal coverage. Also a Ride Pokémon for surfing.'},
+  {num:'#133',name:'Eevee',types:['Normal'],loc:'Route 4 (Gift from NPC in Pokémon Centre)',evo:'8 different evolutions',ability:'Run Away / Adaptability (HA)',moves:['Tackle','Growl','Helping Hand','Sand Attack'],tip:'Free Eevee from Pokémon Center on Route 4! Choose evolution carefully for your team. Adaptability HA doubles STAB boost to 2× instead of 1.5×.'},
+  {num:'#134',name:'Vaporeon',types:['Water'],loc:'Evolve Eevee with Water Stone',evo:'Final form',ability:'Water Absorb / Hydration (HA)',moves:['Surf','Ice Beam','Shadow Ball','Wish'],tip:'Wish + Protect gives Vaporeon near-infinite healing. Water Absorb makes it a Water immunity on your team. Great defensive Water type.'},
+  {num:'#135',name:'Jolteon',types:['Electric'],loc:'Evolve Eevee with Thunder Stone',evo:'Final form',ability:'Volt Absorb / Quick Feet (HA)',moves:['Thunderbolt','Shadow Ball','Hidden Power','Double Kick'],tip:'Fastest Eeveelution. Volt Absorb makes it immune to Electric — useful switch-in. Shadow Ball covers its weaknesses well.'},
+  {num:'#136',name:'Flareon',types:['Fire'],loc:'Evolve Eevee with Fire Stone',evo:'Final form',ability:'Flash Fire / Guts (HA)',moves:['Flare Blitz','Quick Attack','Superpower','Will-O-Wisp'],tip:'Flash Fire absorbs Fire moves and boosts Flare Blitz. Guts HA raises Attack when statused — great with a Flame Orb.'},
+  {num:'#137',name:'Porygon',types:['Normal'],loc:'Poké Pelago (via Poké Bean exchange, rare)',evo:'→ Porygon2 (Up-Grade trade) → Porygon-Z (Dubious Disc trade)',ability:'Trace / Download (HA)',moves:['Conversion','Tackle','Psybeam','Recover'],tip:'Download HA raises Attack or Sp. Atk based on opponent\'s stats. Hard to get without Poké Pelago farming.'},
+  {num:'#143',name:'Snorlax',types:['Normal'],loc:'Tapu Village (post-game, SOS from Munchlax)',evo:'No evolution (Munchlax → Snorlax via Friendship)',ability:'Immunity / Gluttony (HA)',moves:['Body Slam','Rest','Crunch','High Horsepower'],tip:'Munchlax available on Route 1 via Honey. Enormous HP and Sp. Defense. Rest + Chesto Berry is a classic. Appears on Kukui\'s team!'},
+  {num:'#147',name:'Dratini',types:['Dragon'],loc:'Mt. Hokulani (SOS chain), Resolution Cave',evo:'→ Dragonair Lv30 → Dragonite Lv55',ability:'Shed Skin / Marvel Scale (HA)',moves:['Wrap','Thunder Wave','Dragon Rage','Slam'],tip:'Must SOS chain for Dratini on Mt. Hokulani or find in Resolution Cave. Dragonite is still one of the best Pokémon in the game.'},
+  {num:'#148',name:'Dragonair',types:['Dragon'],loc:'Evolve Dratini Lv30',evo:'→ Dragonite Lv55',ability:'Shed Skin / Marvel Scale (HA)',moves:['Dragon Breath','Dragon Dance','Aqua Tail','Outrage'],tip:'Learn Dragon Dance before evolving for better Dragonite immediately. Marvel Scale HA doubles Defense when statused.'},
+  {num:'#149',name:'Dragonite',types:['Dragon','Flying'],loc:'Evolve Dragonair Lv55',evo:'Final form',ability:'Inner Focus / Multiscale (HA)',moves:['Dragon Dance','Outrage','Extreme Speed','Fire Punch'],tip:'Multiscale HA halves damage at full HP — use this on all defensive sets. After Dragon Dance it outspeeds almost everything and hits like a freight train.'},
+  {num:'#163',name:'Hoothoot',types:['Normal','Flying'],loc:'Routes 1, 2, 3 (Night)',evo:'→ Noctowl Lv20',ability:'Insomnia / Tinted Lens (HA)',moves:['Hypnosis','Peck','Foresight','Echoed Voice'],tip:'Insomnia prevents sleep. Tinted Lens HA makes "not very effective" moves do normal damage — all hits become at least neutral.'},
+  {num:'#173',name:'Cleffa',types:['Fairy'],loc:'Route 3 (SOS from Clefairy)',evo:'→ Clefairy (Friendship)',ability:'Cute Charm / Magic Guard (HA)',moves:['Pound','Encore','Magical Leaf','Stored Power'],tip:'Hatch or SOS for Magic Guard. Clefable with Magic Guard is immune to sand, hail, burn, poison damage.'},
+  {num:'#174',name:'Igglybuff',types:['Normal','Fairy'],loc:'Paniola Ranch',evo:'→ Jigglypuff (Friendship)',ability:'Cute Charm / Frisk (HA)',moves:['Sing','Charm','Pound','Defense Curl'],tip:'Frisk HA reveals opponent\'s held item on switch-in — useful for competitive play to check for Choice items.'},
+  {num:'#185',name:'Sudowoodo',types:['Rock'],loc:'Poni Plains',evo:'No evolution',ability:'Sturdy / Rock Head (HA)',moves:['Wood Hammer','Rock Slide','Sucker Punch','Low Kick'],tip:'Rock Head HA removes recoil from Wood Hammer — free 120 BP move. Sturdy ensures it always survives from full HP.'},
+  {num:'#202',name:'Wobbuffet',types:['Psychic'],loc:'Route 13, Haina Desert',evo:'No evolution',ability:'Shadow Tag',moves:['Counter','Mirror Coat','Destiny Bond','Safeguard'],tip:'Shadow Tag traps opponents — they cannot switch out. Counter + Mirror Coat punishes attacks, Destiny Bond takes opponent with it. Very niche but devastating when used right.'},
+  {num:'#209',name:'Snubbull',types:['Fairy'],loc:'Route 6, Paniola Ranch',evo:'→ Granbull Lv23',ability:'Intimidate / Run Away (HA)',moves:['Tackle','Charm','Bite','Headbutt'],tip:'Intimidate on both forms is great utility. Granbull has solid Attack and learns many useful moves by TM.'},
+  {num:'#213',name:'Shuckle',types:['Bug','Rock'],loc:'Ten Carat Hill (inner cave, rare)',evo:'No evolution',ability:'Sturdy / Gluttony (HA)',moves:['Withdraw','Bide','Rollout','Sticky Web'],tip:'Sticky Web lowers opponent Speed on entry — useful for competitive. Shuckle\'s Defense/Sp.Def are the highest in the game. Bide + Sturdy = guaranteed counter hit.'},
+  {num:'#218',name:'Slugma',types:['Fire'],loc:'Wela Volcano Park (rare), Route 7',evo:'→ Magcargo Lv38',ability:'Magma Armor / Flame Body (HA)',moves:['Ember','Rock Throw','Yawn','Ancient Power'],tip:'Flame Body HA has 30% chance to burn on contact — great for making opponents hesitate to use physical moves. Magcargo is slow but very bulky.'},
+  {num:'#222',name:'Corsola',types:['Water','Rock'],loc:'Route 9 (fishing)',evo:'No evolution (Galarian form in later games)',ability:'Hustle / Regenerator (HA)',moves:['Tackle','Bubble','Recover','Ancient Power'],tip:'Corsola calls Mareanie in SOS battles — which you actually want to catch for Toxapex. Use a slow Pokémon to let Corsola call allies.'},
+  {num:'#226',name:'Mantine',types:['Water','Flying'],loc:'Poni Wilds, Poni Breaker Coast (surfing)',evo:'No evolution',ability:'Swift Swim / Water Absorb (HA)',moves:['BubbleBeam','Wing Attack','Bullet Seed','Aqua Ring'],tip:'Huge Sp. Defense makes Mantine a great special wall. Water Absorb HA makes it immune to Water. Useful Surf + Ice Beam coverage.'},
+  {num:'#227',name:'Skarmory',types:['Steel','Flying'],loc:'Mount Hokulani, Route 10',evo:'No evolution',ability:'Keen Eye / Sturdy (HA)',moves:['Steel Wing','Slash','Stealth Rock','Spikes'],tip:'One of the best physical walls in the game. Stealth Rock + Spikes setup. Sturdy guarantees survival from full HP.'},
+  {num:'#231',name:'Phanpy',types:['Ground'],loc:'Route 12',evo:'→ Donphan Lv25',ability:'Pickup',moves:['Tackle','Defense Curl','Rollout','Rapid Spin'],tip:'Pickup occasionally finds items in battle. Donphan has great physical bulk and Rapid Spin for hazard removal.'},
+  {num:'#239',name:'Elekid',types:['Electric'],loc:'Route 10 (Sun Exclusive)',evo:'→ Electabuzz Lv30 → Electivire (Electirizer trade)',ability:'Static / Vital Spirit (HA)',moves:['ThunderShock','Quick Attack','Thunder Punch','Light Screen'],tip:'Sun exclusive. Electivire with Motor Drive in Gen 7 tournaments is solid. Vital Spirit prevents sleep — handy vs Spore/Sleep Powder.'},
+  {num:'#240',name:'Magby',types:['Fire'],loc:'Wela Volcano Park (Rare, Sun)',evo:'→ Magmar Lv30 → Magmortar (Magmarizer trade)',ability:'Flame Body / Vital Spirit (HA)',moves:['Ember','Fire Spin','Confuse Ray','Fire Punch'],tip:'Flame Body on Magby makes it great for hatching eggs (halves egg steps). Magmortar is an excellent Fire attacker if you can trade-evolve.'},
+  {num:'#246',name:'Larvitar',types:['Rock','Ground'],loc:'Mount Lanakila (rare)',evo:'→ Pupitar Lv30 → Tyranitar Lv55',ability:'Guts / Sand Stream (HA)',moves:['Bite','Leer','Sandstorm','Rock Slide'],tip:'Sand Stream HA sets up Sandstorm permanently on switch-in. Tyranitar is a powerhouse. Hard to get before end-game as you need to grind on Mount Lanakila.'},
+  {num:'#248',name:'Tyranitar',types:['Rock','Dark'],loc:'Evolve Pupitar Lv55',evo:'Final form',ability:'Sand Stream',moves:['Stone Edge','Crunch','Earthquake','Dragon Dance'],tip:'Sand Stream + Sand Rush Lycanroc/Excadrill is a competitive combo. Tyranitar alone is one of the most powerful non-legendary Pokémon in the game.'},
+  {num:'#270',name:'Lotad',types:['Water','Grass'],loc:'Route 5 (Moon exclusive)',evo:'→ Lombre Lv14 → Ludicolo (Water Stone)',ability:'Swift Swim / Own Tempo (HA)',moves:['Astonish','Growl','Absorb','Nature Power'],tip:'Moon exclusive. Ludicolo with Swift Swim is a competitive staple in Rain teams. Not available in Sun without trading.'},
+  {num:'#285',name:'Shroomish',types:['Grass'],loc:'Lush Jungle',evo:'→ Breloom Lv23',ability:'Effect Spore / Technician (HA)',moves:['Stun Spore','Mega Drain','Headbutt','Worry Seed'],tip:'Technician HA boosts moves ≤60 BP by 50%. Breloom + Technician + Mach Punch = one of the best in-game Fighting moves. Spore is 100% accurate.'},
+  {num:'#286',name:'Breloom',types:['Grass','Fighting'],loc:'Evolve Shroomish Lv23',evo:'Final form',ability:'Effect Spore / Technician (HA)',moves:['Mach Punch','Bullet Seed','Spore','Focus Punch'],tip:'Technician + Mach Punch = priority 60 BP Fighting. Technician + Bullet Seed (2-5 hits × 25 BP each, boosted to 37.5) averages ~112 BP. Excellent.'},
+  {num:'#296',name:'Makuhita',types:['Fighting'],loc:'Ten Carat Hill, Verdant Cavern',evo:'→ Hariyama Lv24',ability:'Thick Fat / Guts (HA)',moves:['Tackle','Focus Energy','Arm Thrust','Vital Throw'],tip:'Guts HA raises Attack when statused — use a Flame Orb or Toxic Orb for self-activation. Hariyama has massive HP for a Fighting type.'},
+  {num:'#320',name:'Wailmer',types:['Water'],loc:'Various seas (fishing)',evo:'→ Wailord Lv40',ability:'Water Veil / Pressure (HA)',moves:['Splash','Growl','Water Gun','Rollout'],tip:'Wailord is the largest Pokémon by volume but has surprising Sp. Atk. Not meta-defining but fun to use.'},
+  {num:'#324',name:'Torkoal',types:['Fire'],loc:'Wela Volcano Park (Rare)',evo:'No evolution',ability:'White Smoke / Drought (HA)',moves:['Ember','Smog','Curse','Shell Smash'],tip:'Drought HA sets up Sun permanently — enables Solar Blade/Solar Beam without charge, boosts Fire moves. Shell Smash makes it a menacing sweeper.'},
+  {num:'#339',name:'Barboach',types:['Water','Ground'],loc:'Route 13 (fishing)',evo:'→ Whiscash Lv30',ability:'Oblivious / Hydration (HA)',moves:['Mud-Slap','Water Gun','Magnitude','Amnesia'],tip:'Water/Ground gives it great offensive coverage. Earthquake + Surf covers most of the game\'s content. Decent in-game Pokémon.'},
+  {num:'#349',name:'Feebas',types:['Water'],loc:'Route 6 (fishing, rare)',evo:'→ Milotic (Beautiful, Prism Scale trade)',ability:'Swift Swim / Oblivious (HA)',moves:['Splash','Tackle','Flail','Water Pulse'],tip:'Very rare to find. Evolves into Milotic via trading with Prism Scale (found near water). Milotic is one of the best defensive Water types.'},
+  {num:'#351',name:'Castform',types:['Normal'],loc:'Lush Jungle (rare)',evo:'No evolution',ability:'Forecast',moves:['Ember','Rain Dance','Sunny Day','Hail'],tip:'Forecast changes type based on weather. In Sun (weather), becomes Fire type. Interesting but not meta-defining for in-game.'},
+  {num:'#361',name:'Snorunt',types:['Ice'],loc:'Mount Lanakila',evo:'→ Glalie Lv42 / Froslass (Dawn Stone, female only)',ability:'Inner Focus / Moody (HA)',moves:['Powder Snow','Leer','Double Team','Ice Shard'],tip:'Female Snorunt + Dawn Stone = Froslass (Ghost/Ice). Moody HA randomly raises one stat and lowers another each turn — chaotic.'},
+  {num:'#363',name:'Spheal',types:['Ice','Water'],loc:'Poni Wilds (fishing)',evo:'→ Sealeo Lv32 → Walrein Lv44',ability:'Thick Fat / Ice Body (HA)',moves:['Powder Snow','Growl','Water Gun','Encore'],tip:'Thick Fat HA halves damage from Fire and Ice moves. Walrein is bulky and works well in Hail with Ice Body healing.'},
+  {num:'#369',name:'Relicanth',types:['Water','Rock'],loc:'Poni Wilds (fishing, diving spots)',evo:'No evolution',ability:'Swift Swim / Rock Head (HA)',moves:['Water Gun','Rock Tomb','Yawn','Ancient Power'],tip:'Rock Head removes Head Smash recoil — 150 BP with no drawback. Very powerful Rock attacker if you can outfit it right. Appears on Olivia\'s Elite Four team!'},
+  {num:'#374',name:'Beldum',types:['Steel','Psychic'],loc:'Vast Poni Canyon (rare)',evo:'→ Metang Lv20 → Metagross Lv45',ability:'Clear Body',moves:['Take Down'],tip:'Only knows Take Down at first. Clear Body prevents stat lowering by opponents. Metagross is one of the most powerful pseudo-legendaries — worth the grind.'},
+  {num:'#376',name:'Metagross',types:['Steel','Psychic'],loc:'Evolve Metang Lv45',evo:'Final form',ability:'Clear Body / Light Metal (HA)',moves:['Meteor Mash','Zen Headbutt','Earthquake','Bullet Punch'],tip:'Meteor Mash may raise Attack. Bullet Punch is priority Steel. One of the best non-legendary Pokémon in the game. Tough to get before endgame.'},
+  {num:'#408',name:'Cranidos',types:['Rock'],loc:'Fossil Restoration Center Route 8 (Skull Fossil)',evo:'→ Rampardos Lv30',ability:'Mold Breaker / Sheer Force (HA)',moves:['Headbutt','Leer','Pursuit','Take Down'],tip:'Sheer Force HA removes secondary effects of moves but boosts them by 30%. Rock Slide with Sheer Force = no flinch but +30% power. Rampardos has the highest Attack of any fossil Pokémon.'},
+  {num:'#410',name:'Shieldon',types:['Rock','Steel'],loc:'Fossil Restoration Center Route 8 (Armor Fossil)',evo:'→ Bastiodon Lv30',ability:'Sturdy / Soundproof (HA)',moves:['Tackle','Protect','Taunt','Metal Burst'],tip:'Bastiodon is extremely defensive but slow. Sturdy + Metal Burst reflects any hit at 1.5× power. Interesting but not meta.'},
+  {num:'#422',name:'Shellos (West)',types:['Water','Ground'],loc:'Route 4, Paniola Ranch area',evo:'→ Gastrodon Lv30',ability:'Sticky Hold / Storm Drain (HA)',moves:['Mud-Slap','Water Pulse','Hidden Power','Recover'],tip:'Storm Drain HA redirects Water moves to Shellos and raises Sp. Atk — great in doubles. Gastrodon is an excellent defensive Water/Ground with Recover.'},
+  {num:'#427',name:'Buneary',types:['Normal'],loc:'Paniola Town, Route 6',evo:'→ Lopunny (Friendship)',ability:'Run Away / Limber (HA)',moves:['Pound','Defense Curl','Quick Attack','Bounce'],tip:'Limber HA prevents paralysis. Lopunny with High Jump Kick has surprising power. The Mega (not available in Sun) would be excellent.'},
+  {num:'#438',name:'Bonsly',types:['Rock'],loc:'Route 4, Paniola Ranch (SOS from Sudowoodo)',evo:'→ Sudowoodo (learn Mimic)',ability:'Sturdy / Rock Head (HA)',moves:['Copycat','Flail','Low Kick','Rock Slide'],tip:'Rock Head HA removes Wood Hammer/Head Smash recoil — great when evolved. Must learn Mimic to evolve.'},
+  {num:'#458',name:'Mantyke',types:['Water','Flying'],loc:'Poni Wilds (fishing) with Remoraid in party',evo:'→ Mantine (level up with Remoraid in party)',ability:'Swift Swim / Water Absorb (HA)',moves:['BubbleBeam','Tackle','Helping Hand','Agility'],tip:'Must have Remoraid in party to evolve Mantyke into Mantine — don\'t release your Remoraid!'},
+  {num:'#524',name:'Roggenrola',types:['Rock'],loc:'Ten Carat Hill',evo:'→ Boldore Lv25 → Gigalith (trade)',ability:'Sturdy / Sand Force (HA)',moves:['Tackle','Harden','Smack Down','Rock Blast'],tip:'Sand Force HA boosts Rock, Ground, Steel moves in sandstorm. Gigalith requires trade to obtain. Solid physical Rock attacker.'},
+  {num:'#546',name:'Cottonee',types:['Grass','Fairy'],loc:'Melemele Meadow (Sun Exclusive)',evo:'→ Whimsicott (Sun Stone)',ability:'Prankster / Infiltrator (HA)',moves:['Stun Spore','Mega Drain','Leech Seed','Cotton Guard'],tip:'Sun exclusive. Prankster gives Status moves +1 priority — Stun Spore, Leech Seed, Taunt all go first. Competitive staple for support.'},
+  {num:'#548',name:'Petilil',types:['Grass'],loc:'Melemele Meadow (Moon Exclusive)',evo:'→ Lilligant (Sun Stone)',ability:'Chlorophyll / Own Tempo (HA)',moves:['Absorb','Growth','Leech Seed','Quiver Dance'],tip:'Moon exclusive. Lilligant with Chlorophyll doubles Speed in Sun. Own Tempo prevents confusion.'},
+  {num:'#550',name:'Basculin',types:['Water'],loc:'Various routes (fishing)',evo:'No evolution',ability:'Reckless / Adaptability (HA)',moves:['Aqua Tail','Double-Edge','Crunch','Aqua Jet'],tip:'Adaptability HA doubles STAB bonus. Aqua Jet priority + Adaptability is solid for a water type. Not meta but fun filler.'},
+  {num:'#557',name:'Dwebble',types:['Bug','Rock'],loc:'Route 8, Akala Outskirts',evo:'→ Crustle Lv34',ability:'Sturdy / Weak Armor (HA)',moves:['Smack Down','Rock Blast','Bug Bite','Stealth Rock'],tip:'Stealth Rock on a Bug/Rock type covers many entrances. Sturdy + Stealth Rock setup. Shell Smash makes Crustle a surprising sweeper.'},
+  {num:'#562',name:'Yamask',types:['Ghost'],loc:'Haina Desert (Night)',evo:'→ Cofagrigus Lv34',ability:'Mummy',moves:['Astonish','Protect','Disable','Haze'],tip:'Mummy spreads to any Pokémon making contact — gives them Mummy instead of their own ability. Cofagrigus is an excellent physical wall.'},
+  {num:'#582',name:'Vanillite',types:['Ice'],loc:'Mount Lanakila (rare)',evo:'→ Vanillish Lv35 → Vanilluxe Lv47',ability:'Ice Body / Weak Armor (HA)',moves:['Powder Snow','Icicle Spear','Mist','Hail'],tip:'Ice Body heals in Hail. Vanilluxe gets Freeze Dry — an Ice move that\'s super effective on Water types, which is normally ice-resistant.'},
+  {num:'#590',name:'Foongus',types:['Grass','Poison'],loc:'Routes 9, 10, Lush Jungle',evo:'→ Amoonguss Lv39',ability:'Effect Spore',moves:['Astonish','Bide','Mega Drain','Ingrain'],tip:'Spore is 100% accurate sleep — makes Foongus/Amoonguss excellent catchers. Amoonguss is a top-tier doubles support Pokémon.'},
+  {num:'#594',name:'Alomomola',types:['Water'],loc:'Routes 7, 9, Melemele Sea',evo:'No evolution (unrelated to Luvdisc)',ability:'Healer / Regenerator (HA)',moves:['Aqua Ring','Heal Pulse','Water Gun','Lucky Chant'],tip:'Regenerator heals 33% on switch. Wish from Alomomola heals team massively — it\'s the largest HP Pokémon. Top defensive support.'},
+  {num:'#618',name:'Stunfisk',types:['Ground','Electric'],loc:'Paniola Ranch (fishing)',evo:'No evolution (Galarian form later)',ability:'Static / Sand Veil (HA)',moves:['Thunder Shock','Mud-Slap','Discharge','Earth Power'],tip:'Unique type combination with only one weakness (Grass). Static ability paralyzes on contact 30% — handy for catching.'},
+  {num:'#624',name:'Pawniard',types:['Dark','Steel'],loc:'Ula\'ula Meadow, Route 15',evo:'→ Bisharp Lv52',ability:'Defiant / Pressure (HA)',moves:['Scratch','Leer','Night Slash','Iron Head'],tip:'Defiant HA raises Attack +2 when any stat is lowered by an opponent — punishes Intimidate and stat-lowering moves. Bisharp is a top-tier Pokémon.'},
+  {num:'#627',name:'Rufflet',types:['Normal','Flying'],loc:'Ten Carat Hill (Sun Exclusive)',evo:'→ Braviary Lv54',ability:'Keen Eye / Defiant (HA)',moves:['Peck','Leer','Fury Attack','Wing Attack'],tip:'Sun exclusive. Braviary is a very strong Normal/Flying physical attacker with Superpower for coverage. Defiant punishes Intimidate.'},
+  {num:'#629',name:'Vullaby',types:['Dark','Flying'],loc:'Ten Carat Hill (Moon Exclusive)',evo:'→ Mandibuzz Lv54',ability:'Big Pecks / Overcoat (HA)',moves:['Gust','Leer','Fury Attack','Pluck'],tip:'Moon exclusive. Mandibuzz is an extremely durable defensive Pokémon — Bone Rush + Overcoat provides hazard immunity.'},
+  {num:'#636',name:'Larvesta',types:['Bug','Fire'],loc:'Poni Meadow (very rare)',evo:'→ Volcarona Lv59',ability:'Flame Body / Swarm (HA)',moves:['Ember','String Shot','Leech Life','Take Down'],tip:'Extremely rare. Volcarona after a Quiver Dance is one of the strongest sweepers in the game. Worth the wait. Flame Body helps egg hatching.'},
+  {num:'#638',name:'Cobalion',types:['Steel','Fighting'],loc:'Not available in Sun (transfer only)',evo:'No evolution',ability:'Justified',moves:['Metal Claw','Take Down','Helping Hand','Retaliate'],tip:'Transfer via Pokémon Bank from Gen 5. Justified raises Attack when hit by Dark moves.'},
+  {num:'#653',name:'Fennekin',types:['Fire'],loc:'Not available in Alola wild (transfer only)',evo:'→ Braixen Lv16 → Delphox Lv36',ability:'Blaze / Magician (HA)',moves:['Scratch','Tail Whip','Ember','Howl'],tip:'Transfer from X/Y via Pokémon Bank. Delphox is a fantastic Fire/Psychic attacker.'},
+  {num:'#661',name:'Fletchling',types:['Normal','Flying'],loc:'Route 2 (Rare)',evo:'→ Fletchinder Lv17 → Talonflame Lv35',ability:'Big Pecks / Gale Wings (HA)',moves:['Tackle','Growl','Quick Attack','Peck'],tip:'Gale Wings gives Flying moves +1 priority — but ONLY at full HP in Gen 7 (was any HP in Gen 6). Brave Bird with priority at full HP is still very strong.'},
+  {num:'#676',name:'Furfrou',types:['Normal'],loc:'Route 4',evo:'No evolution',ability:'Fur Coat',moves:['Tackle','Growl','Sand Attack','Baby-Doll Eyes'],tip:'Fur Coat halves damage from physical moves — makes it a surprisingly effective physical wall despite Normal typing.'},
+  {num:'#702',name:'Dedenne',types:['Electric','Fairy'],loc:'Route 9, Blush Mountain',evo:'No evolution',ability:'Cheek Pouch / Plus (HA)',moves:['Nuzzle','Thunderbolt','Dazzling Gleam','Charm'],tip:'Nuzzle paralyzes target at 100% hit rate — useful for catching. Cheek Pouch heals extra HP when eating a Berry.'},
+  {num:'#703',name:'Carbink',types:['Rock','Fairy'],loc:'Ten Carat Hill, Vast Poni Canyon',evo:'No evolution',ability:'Clear Body / Sturdy (HA)',moves:['Tackle','Harden','Rock Throw','Sharpen'],tip:'Sturdy HA ensures survival from full HP. Carbink appears on Olivia\'s team. Stealth Rock setter with decent bulk.'},
+  {num:'#704',name:'Goomy',types:['Dragon'],loc:'Route 17 (Rain)',evo:'→ Sliggoo Lv40 → Goodra Lv50 (in Rain)',ability:'Sap Sipper / Hydration (HA)',moves:['Tackle','Bubble','Absorb','Protect'],tip:'Only appears when it\'s raining on Route 17. Goodra has the highest Sp. Defense of any non-legendary Dragon type. Hydration cures status in Rain.'},
+  {num:'#714',name:'Noibat',types:['Flying','Dragon'],loc:'Verdant Cavern, Seaward Cave (SOS)',evo:'→ Noivern Lv48',ability:'Frisk / Telepathy (HA)',moves:['Supersonic','Tackle','Absorb','Bite'],tip:'Frisk HA reveals opponent\'s held item on switch-in. Noivern is a fantastic fast Dragon/Flying with Frisk utility in competitive.'},
+  {num:'#715',name:'Noivern',types:['Flying','Dragon'],loc:'Evolve Noibat Lv48',evo:'Final form',ability:'Frisk / Telepathy (HA)',moves:['Hurricane','Draco Meteor','U-turn','Flamethrower'],tip:'Extremely fast (123 Speed). Hurricane in Rain is 100% accurate. Frisk identifies Choice items. One of the better late-game Dragon types available.'},
+  {num:'#716',name:'Xerneas',types:['Fairy'],loc:'Not in Alola (transfer from XY)',evo:'No evolution',ability:'Fairy Aura',moves:['Geomancy','Moonblast','Focus Blast','Thunder'],tip:'Transfer from X only. Geomancy after Power Herb is one of the strongest setup moves in the game — doubles Sp.Atk, Sp.Def, Speed.'},
+  {num:'#718',name:'Zygarde',types:['Dragon','Ground'],loc:'Resolution Cave (Zygarde Cells/Core)',evo:'No evolution',ability:'Aura Break / Power Construct (HA)',moves:['Thousand Arrows','Thousand Waves','Core Enforcer','Extreme Speed'],tip:'Collect all 100 Zygarde Cells to unlock Complete Form. Power Construct HA transforms it into 100% form below 50% HP. Thousand Arrows grounds Flying types.'},
+];
+
+const TEAMS_DATA = [
+  {name:'Incineroar',sub:'Fire / Dark — Physical Sweeper',types:['Fire','Dark'],
+   item:'Incinium Z / Firium Z',ability:'Blaze (main) / Intimidate (HA preferred)',
+   moves:['Flare Blitz','Darkest Lariat','Close Combat','Earthquake'],
+   moveTips:['STAB 120 BP recoil fire — primary STAB','Ignores stat changes (Curse, Cotton Guard etc)','Coverage: Normal, Ice, Rock, Dark, Steel','Coverage: Fire, Electric, Rock, Poison, Steel'],
+   stats:{hp:95,atk:115,def:90,spatk:80,spdef:90,spd:60},
+   tip:'Best starter. Intimidate HA is essential for endgame. Get the hidden ability from breeding or Festival Plaza. Incineroar Z-Move Malicious Moonsault has 180 BP.'},
+  {name:'Mimikyu',sub:'Ghost / Fairy — Setup Sweeper',types:['Ghost','Fairy'],
+   item:'Mimikium Z (Exclusive) / Lum Berry',ability:'Disguise',
+   moves:['Play Rough','Shadow Sneak','Swords Dance','Wood Hammer'],
+   moveTips:['Primary STAB 90 BP — chance to lower ATK','Priority Ghost STAB after +2 ATK devastates','Free setup — Disguise absorbs first hit','Coverage: Water, Ground, Rock'],
+   stats:{hp:55,atk:90,def:80,spatk:50,spdef:105,spd:96},
+   tip:'Disguise makes Swords Dance setup free. After +2 Attack, Shadow Sneak priority takes out frail threats, Play Rough demolishes bulkier ones. Let\'s Snuggle Forever Z-Move hits 190 BP.'},
+  {name:'Vikavolt',sub:'Bug / Electric — Special Sweeper',types:['Bug','Electric'],
+   item:'Choice Specs / Expert Belt',ability:'Levitate',
+   moves:['Thunderbolt','Bug Buzz','Energy Ball','Flash Cannon'],
+   moveTips:['Primary STAB — covers Water, Flying','Primary STAB — covers Dark, Psychic, Grass','Coverage: Water, Ground, Rock','Coverage: Ice, Fairy, Rock'],
+   stats:{hp:77,atk:70,def:90,spatk:145,spdef:75,spd:43},
+   tip:'145 Sp. Attack is outstanding. Levitate makes it immune to Earthquake. Slow but with Choice Specs it will OHKO most things it hits. Great vs Hala and Kahili.'},
+  {name:'Kommo-o',sub:'Dragon / Fighting — Mixed Attacker',types:['Dragon','Fighting'],
+   item:'Kommonium Z / Dragon Fang',ability:'Bulletproof',
+   moves:['Clanging Scales','Close Combat','Dragon Dance','Flash Cannon'],
+   moveTips:['Special STAB 110 BP — lowers own Sp.Def (use Z for Clangorous Soulblaze)','Physical STAB — covers Normal, Ice, Rock, Dark, Steel','+1 ATK and SPD — sweep setup','Coverage: Ice, Fairy, Rock'],
+   stats:{hp:75,atk:110,def:125,spatk:100,spdef:105,spd:85},
+   tip:'After a Dragon Dance, Kommo-o is devastating. Bulletproof ignores ball/bomb moves like Aura Sphere. Clangorous Soulblaze Z-Move boosts all stats. Best pseudo-legendary for Sun.'},
+  {name:'Alolan Muk',sub:'Poison / Dark — Utility Wall',types:['Poison','Dark'],
+   item:'Black Sludge / Rocky Helmet',ability:'Poison Touch / Power of Alchemy (HA)',
+   moves:['Poison Jab','Crunch','Shadow Sneak','Acid Spray'],
+   moveTips:['Primary STAB 80 BP + 30% poison chance','Secondary STAB — covers Ghost, Psychic','Priority Ghost coverage','Lowers Sp.Def 2 stages — enables teammates'],
+   stats:{hp:105,atk:105,def:75,spatk:65,spdef:100,spd:50},
+   tip:'Only one weakness (Ground). Excellent typing. Free from Malie City NPC (Grimer). Shadow Sneak priority covers Ghost types that nothing else on the team handles. Great vs Acerola Elite Four.'},
+  {name:'Lycanroc (Midday)',sub:'Rock — Fast Physical Attacker',types:['Rock'],
+   item:'Choice Scarf / Life Orb',ability:'Keen Eye / Sand Rush (HA)',
+   moves:['Stone Edge','Accelerock','Crunch','Fire Fang'],
+   moveTips:['Primary STAB 100 BP — high crit chance','Priority Rock STAB — always goes first','Coverage: Ghost, Psychic','Coverage: Bug, Ice, Grass, Steel'],
+   stats:{hp:75,atk:115,def:65,spatk:55,spdef:65,spd:112},
+   tip:'Sand Rush with Tyranitar sandstorm doubles Speed to 224 — outruns almost everything. Accelerock priority ensures it can revenge kill even faster threats. Great vs Olivia.'},
+];
+
+const BATTLE_TREE_DATA = [
+  {name:'Garchomp',sub:'Dragon / Ground — Sand + Dragon Dance',types:['Dragon','Ground'],
+   item:'Rocky Helmet / Choice Scarf',ability:'Rough Skin',
+   moves:['Dragon Claw','Earthquake','Stone Edge','Swords Dance'],
+   moveTips:['Primary STAB — Dragon coverage','Primary STAB — Ground coverage','Coverage: Ice, Flying, Fire','Setup for sweep'],
+   stats:{hp:108,atk:130,def:95,spatk:80,spdef:85,spd:102},
+   tip:'Rough Skin + Rocky Helmet punishes physical attackers with 25% damage. Top Battle Tree performer. Earthquake covers most threats.'},
+  {name:'Toxapex',sub:'Poison / Water — Defensive Staller',types:['Poison','Water'],
+   item:'Black Sludge',ability:'Regenerator',
+   moves:['Baneful Bunker','Recover','Toxic','Haze'],
+   moveTips:['Protect variant that poisons contact attackers','33% HP recovery','Poisons target — wins stall wars','Removes all stat boosts — counters setup sweepers'],
+   stats:{hp:50,atk:63,def:152,spatk:53,spdef:142,spd:35},
+   tip:'Regenerator + Recover + Black Sludge = almost unkillable. Haze stops any Battle Tree Pokémon that tries to setup sweep. Essential anchor.'},
+  {name:'Tapu Koko',sub:'Electric / Fairy — Fast Attacker',types:['Electric','Fairy'],
+   item:'Choice Specs / Life Orb',ability:'Electric Surge',
+   moves:['Thunderbolt','Dazzling Gleam','U-turn','Hidden Power Ice'],
+   moveTips:['Boosted by terrain STAB — very powerful','Secondary STAB — covers Dragon, Dark, Fighting','Pivot to reset terrain','Coverage: Dragon, Ground, Flying'],
+   stats:{hp:70,atk:115,def:85,spatk:95,spdef:75,spd:130},
+   tip:'Electric Terrain boosts Thunderbolt to absurd levels. 130 Speed outspeeds most Battle Tree threats. U-turn for safe pivoting.'},
+];
+
+const RIDES_DATA = [
+  {emoji:'🐂',name:'Tauros',ability:'Tauros Charge',color:'gold',
+   desc:'Smash through cracked rocks that block paths. Can also run at high speed to access new areas. Tauros is the workhorse of traversal.',
+   replaces:'Rock Smash (HM06)',when:'Given by Kahuna Hala after Grand Trial 1'},
+  {emoji:'🧊',name:'Lapras',ability:'Lapras Paddle',color:'teal',
+   desc:'Ride on Lapras to traverse calm bodies of water. Moves at a comfortable paddling pace and reaches otherwise inaccessible areas and islands.',
+   replaces:'Surf (HM03)',when:'Given on Akala Island during story'},
+  {emoji:'🐕',name:'Stoutland',ability:'Stoutland Search',color:'gold',
+   desc:'Sniffs out hidden items buried underground. An upgraded Dowsing Machine — shows a sparkle and leads you toward the item. Walk slowly for best results.',
+   replaces:'Dowsing Machine / Item Finder',when:'Given by a trainer on Akala Island'},
+  {emoji:'🐴',name:'Mudsdale',ability:'Mudsdale Gallop',color:'teal',
+   desc:'Traverses rough terrain that would otherwise slow you down or trigger wild battles. No random wild encounters while riding Mudsdale.',
+   replaces:'Rough terrain traversal / partial Strength',when:'Given during Akala Island story progression'},
+  {emoji:'🦈',name:'Sharpedo',ability:'Sharpedo Jet',color:'gold',
+   desc:'Travels on water at high speed. Can also smash cracked rocks found underwater and in the ocean, accessing new fishing spots and routes.',
+   replaces:'Waterfall (HM07) + ocean Rock Smash',when:'Given by Grimsley on Ula\'ula Island'},
+  {emoji:'🐉',name:'Charizard',ability:'Charizard Glide',color:'teal',
+   desc:'Fly to any town, city, or location you have previously visited. The fastest way to travel across the Alola islands.',
+   replaces:'Fly (HM02)',when:'Given by Kiawe on Akala Island after Fire Trial'},
+  {emoji:'💪',name:'Machamp',ability:'Machamp Shove',color:'gold',
+   desc:'Pushes large and heavy stone boulders that cannot be moved by hand. Opens up new paths in dungeons and caves.',
+   replaces:'Strength (HM04)',when:'Given during Ula\'ula Island story'},
+  {emoji:'🐸',name:'Poliwrath',ability:'Poliwrath Paddle',color:'teal',
+   desc:'Climbs waterfalls and traverses rough waters that even Lapras cannot navigate. Required to access upper portions of certain areas.',
+   replaces:'Waterfall (HM08)',when:'Given during Poni Island story'},
+];
+
+const POSTGAME_DATA = [
+  {tag:'STORY COMPLETION',title:'Ultra Beast Hunt',body:'After becoming Champion, Looker and Anabel contact you at the Festival Plaza. Hunt down 6 Ultra Beasts across Alola. Each comes with special Beast Balls. Sequence: Nihilego → UB-02 Absorption (Sun) → UB-02 Beauty (Moon exclusive, trade) → UB-03 → UB-04 → UB-05.'},
+  {tag:'EXPLORATION',title:'Return to All Islands',body:'Many areas open up after becoming Champion. New items appear, trainers have stronger teams, and returning to each island\'s ruins allows you to battle the Island Guardians: Tapu Koko (Ruins of Conflict), Tapu Lele (Ruins of Life), Tapu Bulu (Ruins of Abundance), Tapu Fini (Ruins of Hope). All at Lv60 — save before each.'},
+  {tag:'CHALLENGE',title:'Battle Tree',body:'Located on Poni Gauntlet. Endless challenge facility — single, double, or multi battles. At floor 20 and 40, you face special trainers including Red and Blue (from Gen 1!). Build a team specifically for this — use Lv50 caps and team synergy. Great for earning BP (Battle Points) to buy competitive items.'},
+  {tag:'COLLECTION',title:'Zygarde Cells',body:'100 Zygarde Cells are scattered across Alola. Can only collect one per real-world day from each cell. Reach 50 cells for 50% Forme. All 100 for Power Construct — complete form activates below 50% HP. Assembly Machine in Route 16 research lab.'},
+  {tag:'LEGENDARY',title:'Cosmog (Second One)',body:'After completing the Ultra Beast quest, you can get a second Cosmog from the Lake of the Moone (in Sun). Travel through the Ultra Wormhole. This Cosmog can be evolved into Lunala if you\'re playing Sun — giving you the opposite mascot via evolution.'},
+  {tag:'COMPETITIVE',title:'Hyper Training & Breeding',body:'Mr. Hyper at Festival Plaza can maximize a Pokémon\'s IVs using Bottle Caps (Gold Bottle Cap = all stats). Pokémon must be Lv100. Pair this with Pokémon Nursery breeding for competitive-ready Pokémon with 5-6 perfect IVs, correct nature, and Hidden Abilities.'},
+  {tag:'COMPLETION',title:'National Pokédex',body:'After seeing all 302 Pokémon in the Alola Pokédex, Professor Kukui gives you the Shiny Charm — triples your Shiny encounter rate. Combine with SOS chaining (chain 70+ calls for best odds) for efficient shiny hunting.'},
+  {tag:'CHALLENGE',title:'Defending Champion Title',body:'After becoming Champion, strong trainers will occasionally challenge you at the Hall of Fame. The title defence battles refresh over time. Keep your team strong and your Champion title defended!'},
+];
+
+const TIPS_DATA = [
+  {emoji:'💾',title:'Save Often, Save Smart',body:'Sun has one save file. Save before every legendary, Kahuna, and Trial Totem. If you\'re unhappy with a caught Pokémon\'s nature, reset and try again.'},
+  {emoji:'📞',title:'SOS Battles for Hidden Abilities',body:'Keep wild battles going to trigger SOS calls. After ~5 SOS chain turns, called allies have a higher chance of having their Hidden Ability. Essential for Intimidate Incineroar and Regenerator Toxapex.'},
+  {emoji:'🍬',title:'Poké Pelago for Rare Items',body:'Unlock Isle Aphun on Poké Pelago to dig for rare items daily. This is how you get Bottle Caps, rare stones, and hard-to-find held items without grinding.'},
+  {emoji:'🏅',title:'Festival Plaza for BP Items',body:'Earn Festival Coins via Festival Plaza online and offline. BP (Battle Points) from Battle Tree buys competitive items: Power Bracer, Destiny Knot, Metal Coat, etc.'},
+  {emoji:'🌙',title:'Day/Night Pokémon Matter',body:'Many Pokémon only appear at certain times. Sun\'s clock is the real clock — so if you want Night Pokémon without waiting, adjust your 3DS system time. Note: Don\'t do this right before playing for long as it may trigger a penalty.'},
+  {emoji:'🎣',title:'Fishing for Chain Encounters',body:'Keep catching or knocking out from the same fishing spot to chain. After 40+ chains, rare and shiny Pokémon appear at higher rates. Great for rare fishing encounters like Feebas and Dhelmise.'},
+  {emoji:'🥊',title:'KO Counter = Encounter Boost',body:'After KO\'ing 50+ of the same species in SOS battles, calling Pokémon have a higher chance of having 4 perfect IVs. This is the fastest way to get competitive Pokémon without breeding.'},
+  {emoji:'🍃',title:'Harvest Ability = Infinite Berries',body:'Exeggutor and Trevenant with Harvest HA restore eaten Berries every turn in Sun weather. A Lum Berry that keeps restoring means they\'re immune to status conditions all game.'},
+  {emoji:'⚡',title:'Z-Move Economy',body:'Each Pokémon can use its Z-Move only once per battle. Save Z-Moves for when you need to break through a tanky Pokémon or guarantee a KO on a Totem. Don\'t waste them on weak enemies.'},
+  {emoji:'📱',title:'Rotom Pokédex Perks',body:'Your Rotom Pokédex gives you QR Scanner — scan QR codes of Pokémon to register them. 10 scans gives an Island Scan, which spawns a rare non-Alola Pokémon for 1 hour. Great for starters from other games.'},
+];
+
+// ══════════════════════════════════════════
+//  RENDER FUNCTIONS
+// ══════════════════════════════════════════
+
+function typeBadges(types) {
+  return types.map(t => `<span class="type-badge ${TYPE_COLORS[t] || 't-normal'}">${t}</span>`).join('');
+}
+
+function renderTeams() {
+  const container = document.getElementById('teamsContainer');
+  container.innerHTML = TEAMS_DATA.map((p, i) => `
+    <div class="pokemon-team-card" id="tc-${i}">
+      <div class="pokemon-team-header" onclick="toggleTeam('tc-${i}')">
+        <div>
+          <div class="pokemon-team-name">${p.name}</div>
+          <div class="pokemon-team-sub">${p.sub}</div>
+          <div class="types mt8">${typeBadges(p.types)}</div>
+        </div>
+        <div style="margin-left:auto;">
+          <div class="pokemon-team-toggle">▼</div>
+        </div>
+      </div>
+      <div class="pokemon-team-body">
+        <div class="held-item-badge">🎒 ${p.item}</div>
+        <div class="dex-section-label">Ability</div>
+        <div style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">${p.ability}</div>
+        <div class="dex-section-label">Moves</div>
+        <div class="moveset-grid">
+          ${p.moves.map((m, mi) => `<div class="move-pill" title="${p.moveTips[mi]}">${m}</div>`).join('')}
+        </div>
+        <div class="dex-section-label">Base Stats</div>
+        ${renderStatBars(p.stats)}
+        <div class="dex-section-label">Strategy</div>
+        <div style="font-size:12px; color:var(--text-muted); line-height:1.6;">${p.tip}</div>
+      </div>
+    </div>
+  `).join('');
+
+  const btContainer = document.getElementById('battleTreeContainer');
+  btContainer.innerHTML = BATTLE_TREE_DATA.map((p, i) => `
+    <div class="pokemon-team-card" id="bt-${i}">
+      <div class="pokemon-team-header" onclick="toggleTeam('bt-${i}')">
+        <div>
+          <div class="pokemon-team-name">${p.name}</div>
+          <div class="pokemon-team-sub">${p.sub}</div>
+          <div class="types mt8">${typeBadges(p.types)}</div>
+        </div>
+        <div class="pokemon-team-toggle" style="margin-left:auto;">▼</div>
+      </div>
+      <div class="pokemon-team-body">
+        <div class="held-item-badge">🎒 ${p.item}</div>
+        <div class="dex-section-label">Ability</div>
+        <div style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">${p.ability}</div>
+        <div class="dex-section-label">Moves</div>
+        <div class="moveset-grid">${p.moves.map(m => `<div class="move-pill">${m}</div>`).join('')}</div>
+        <div class="dex-section-label">Strategy</div>
+        <div style="font-size:12px; color:var(--text-muted); line-height:1.6;">${p.tip}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderStatBars(stats) {
+  const labels = {hp:'HP',atk:'Attack',def:'Defense',spatk:'Sp.Atk',spdef:'Sp.Def',spd:'Speed'};
+  return Object.entries(stats).map(([k, v]) => `
+    <div class="stat-row">
+      <span class="stat-label">${labels[k]}</span>
+      <div class="stat-bar-bg"><div class="stat-bar" style="width:${Math.min(100, v/180*100)}%"></div></div>
+      <span class="stat-val">${v}</span>
+    </div>
+  `).join('');
+}
+
+function renderRides() {
+  const container = document.getElementById('ridesContainer');
+  container.innerHTML = RIDES_DATA.map(r => `
+    <div class="ride-card">
+      <div class="ride-icon ${r.color}">${r.emoji}</div>
+      <div>
+        <div class="ride-title">${r.name}</div>
+        <div class="ride-ability">${r.ability}</div>
+        <div class="ride-desc">${r.desc}</div>
+        <span class="ride-replaces">↩ Replaces: ${r.replaces}</span>
+        <span class="when-badge">📍 ${r.when}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderPostGame() {
+  const container = document.getElementById('postgameContainer');
+  container.innerHTML = POSTGAME_DATA.map(p => `
+    <div class="pg-card">
+      <div class="pg-tag">${p.tag}</div>
+      <div class="pg-title">${p.title}</div>
+      <div class="pg-body">${p.body}</div>
+    </div>
+  `).join('');
+
+  const tips = document.getElementById('tipsContainer');
+  tips.innerHTML = TIPS_DATA.map(t => `
+    <div class="tip-item">
+      <span class="tip-emoji">${t.emoji}</span>
+      <div class="tip-content">
+        <div class="tip-title">${t.title}</div>
+        <div class="tip-body">${t.body}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════════
+//  POKÉDEX
+// ══════════════════════════════════════════
+
+let activeDexType = 'All';
+
+function renderDexGrid(data) {
+  const grid = document.getElementById('dexGrid');
+  const empty = document.getElementById('dexEmpty');
+  if (data.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = data.map((p, i) => `
+    <div class="dex-card" onclick="openDexModal(${DEX_DATA.indexOf(p)})">
+      <div class="dex-num">${p.num}</div>
+      <div class="dex-name">${p.name}</div>
+      <div class="types">${typeBadges(p.types)}</div>
+      <div class="dex-loc">${p.loc.split(' / ')[0]}</div>
+    </div>
+  `).join('');
+}
+
+function filterDex() {
+  const q = document.getElementById('dexSearch').value.toLowerCase();
+  let filtered = DEX_DATA.filter(p => {
+    const matchSearch = !q || p.name.toLowerCase().includes(q) || p.loc.toLowerCase().includes(q) || p.types.some(t => t.toLowerCase().includes(q));
+    const matchType = activeDexType === 'All' || p.types.includes(activeDexType);
+    return matchSearch && matchType;
+  });
+  renderDexGrid(filtered);
+}
+
+function renderTypeFilters() {
+  const container = document.getElementById('typeFilters');
+  const types = ['All', ...Object.keys(TYPE_COLORS)];
+  container.innerHTML = types.map(t => `
+    <button class="type-filter-btn ${t === 'All' ? 'active' : ''}" onclick="setTypeFilter('${t}', this)">${t}</button>
+  `).join('');
+}
+
+function setTypeFilter(type, btn) {
+  activeDexType = type;
+  document.querySelectorAll('.type-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterDex();
+}
+
+function openDexModal(idx) {
+  const p = DEX_DATA[idx];
+  const modal = document.getElementById('dexModal');
+  const content = document.getElementById('dexModalContent');
+  content.innerHTML = `
+    <div class="dex-modal-header">
+      <div>
+        <div class="dex-modal-num">${p.num}</div>
+        <div class="dex-modal-name">${p.name}</div>
+        <div class="types mt8">${typeBadges(p.types)}</div>
+      </div>
+      <div class="dex-modal-close" onclick="closeDexModal()">✕</div>
+    </div>
+    <div class="dex-detail-row"><span class="dex-detail-label">Location</span><span class="dex-detail-val">${p.loc}</span></div>
+    <div class="dex-detail-row"><span class="dex-detail-label">Evolution</span><span class="dex-detail-val">${p.evo}</span></div>
+    <div class="dex-detail-row"><span class="dex-detail-label">Ability</span><span class="dex-detail-val">${p.ability}</span></div>
+    <div class="dex-section-label">Recommended Moves</div>
+    ${p.moves.map(m => `<div class="dex-move-row"><span class="move-name">${m}</span></div>`).join('')}
+    <div class="dex-section-label">In-Game Tips</div>
+    <div style="font-size:13px; color:var(--text-muted); line-height:1.7; padding:8px; background:var(--bg-panel); border-radius:8px;">${p.tip}</div>
+  `;
+  modal.classList.add('open');
+}
+
+function closeDexModal(e) {
+  if (!e || e.target === document.getElementById('dexModal')) {
+    document.getElementById('dexModal').classList.remove('open');
+  }
+}
+
+// ══════════════════════════════════════════
+//  TOGGLE FUNCTIONS
+// ══════════════════════════════════════════
+
+function toggleIsland(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+function toggleTrial(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+function toggleTeam(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+// ══════════════════════════════════════════
+//  TAB SWITCHING
+// ══════════════════════════════════════════
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('pane-' + name).classList.add('active');
+  btn.classList.add('active');
+  // Scroll to top
+  document.getElementById('pane-' + name).scrollTop = 0;
+}
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderTypeFilters();
+  renderDexGrid(DEX_DATA);
+  renderTeams();
+  renderRides();
+  renderPostGame();
+});
+</script>
+</body>
+</html>
