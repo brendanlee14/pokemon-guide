@@ -5,6 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="theme-color" content="#0B1426">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<script>
+// Must be first — captures beforeinstallprompt before any async load delay
+window.__pwaPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  window.__pwaPrompt = e;
+  const btn = document.getElementById('installBtn');
+  if (btn) btn.style.display = 'block';
+});
+window.addEventListener('appinstalled', () => {
+  window.__pwaPrompt = null;
+  const btn = document.getElementById('installBtn');
+  if (btn) btn.style.display = 'none';
+});
+</script>
 <title>PokéGuide</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
@@ -2155,10 +2170,12 @@ window.addEventListener('appinstalled', () => {
 });
 
 function installPWA() {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  deferredPrompt.userChoice.then(() => {
+  const prompt = deferredPrompt || window.__pwaPrompt;
+  if (!prompt) return;
+  prompt.prompt();
+  prompt.userChoice.then(() => {
     deferredPrompt = null;
+    window.__pwaPrompt = null;
     document.getElementById('installBtn').style.display = 'none';
   });
 }
