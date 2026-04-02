@@ -1,4 +1,4 @@
-const CACHE = 'pokeguide-v1';
+const CACHE = 'pokeguide-v2';
 
 const ASSETS = [
   '/',

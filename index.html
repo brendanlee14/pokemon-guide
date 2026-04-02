@@ -774,6 +774,7 @@ body {
     <span>FIELD GUIDE · V1</span>
   </div>
   <div id="game-selector">
+    <button id="installBtn" style="display:none; background:var(--teal-dim); border:1px solid var(--teal); border-radius:20px; padding:5px 12px; font-family:'Nunito',sans-serif; font-size:12px; font-weight:700; color:var(--teal); cursor:pointer;" onclick="installPWA()">⬇ Install</button>
     <button class="game-btn active">☀️ Sun</button>
     <button class="game-btn" disabled>🌙 Moon</button>
     <button class="game-btn" disabled>+ More</button>
@@ -2137,6 +2138,28 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js')
       .then(r => console.log('SW registered:', r.scope))
       .catch(e => console.warn('SW failed:', e));
+  });
+}
+
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBtn').style.display = 'block';
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  document.getElementById('installBtn').style.display = 'none';
+});
+
+function installPWA() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(() => {
+    deferredPrompt = null;
+    document.getElementById('installBtn').style.display = 'none';
   });
 }
 </script>
