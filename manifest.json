@@ -1,0 +1,36 @@
+{
+  "name": "PokéGuide — Sun Field Guide",
+  "short_name": "PokéGuide",
+  "description": "Complete Pokémon Sun game guide — Pokédex, Trials, Teams, Ride Pokémon and more.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0B1426",
+  "background_color": "#080E1C",
+  "categories": ["games", "reference"],
+  "icons": [
+    {
+      "src": "icons/favicon-32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
